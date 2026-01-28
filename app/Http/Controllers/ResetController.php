@@ -41,7 +41,10 @@ class ResetController extends Controller
         );
     
         return $status === Password::PASSWORD_RESET    
-                    ? redirect()->route('auth.login')->with('success', __($status))    
-                    : back()->withErrors(['email' => [__($status)]]);
+                    ? redirect()->route('auth.login')
+                        ->with('success', 'Password berhasil direset, silakan login')
+                    : back()->withErrors([
+                        'email' => ['Token reset tidak valid atau sudah kedaluwarsa.']
+                    ]);
     }
 }

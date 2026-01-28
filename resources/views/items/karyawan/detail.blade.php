@@ -128,12 +128,14 @@
                             <div class="title text-success mb-2">
                                 <i class="bi bi-person-circle me-1"></i> User
                             </div>
-                            <p class="text-muted mb-1">Harga</p>
+                            
+                            {{-- HARGA --}}
+                            <p class="text-muted mb-1 small">Harga</p>
                             @if (!empty($hasMultiUnitPrices) && $hasMultiUnitPrices)
                                 @foreach($unitPrices as $unitName => $p)
                                     @if(isset($p['user']) && $p['user'] > 0)
                                         <h3 id="userPrice" class="price-user" data-unit="{{$unitName}}">
-                                            Rp {{ number_format($p['user'], 0, ',', '.') }} / {{ strtoupper($unitName) }}
+                                            Rp {{ number_format($p['user'], 0, ',', '.') }} <small>/ {{ strtoupper($unitName) }}</small>
                                         </h3>
                                     @endif
                                 @endforeach
@@ -141,10 +143,32 @@
                                 <h3 id="userPriceMain" class="price-user">
                                     Rp {{ number_format($prices['user'],0,',','.') }}
                                 </h3>
-                            @endif                            
-                            <hr>
-                            <p class="text-muted mb-1">Garansi</p>
-                            <p class="fw-semibold">{{ $item['charField6'] ?? '-' }}</p>
+                            @endif
+                            
+                            <hr class="my-2">
+                            
+                            {{-- GARANSI --}}
+                            <div class="mb-2">
+                                <p class="text-muted mb-1 small">Garansi</p>
+                                <p class="fw-semibold mb-0">{{ $item['charField6'] ?? '-' }}</p>
+                            </div>
+                            
+                            {{-- KELENGKAPAN --}}
+                            <div class="kelengkapan-section">
+                                <p class="text-muted mb-1 small">Kelengkapan</p>
+                                <div class="kelengkapan-content">
+                                    @if(isset($item['charField8']) && trim($item['charField8']) !== '')
+                                        <p class="fw-semibold mb-1 small">{{ $item['charField8'] }}</p>
+                                    @endif
+                                    @if(isset($item['charField9']) && trim($item['charField9']) !== '')
+                                        <p class="fw-semibold mb-0 small">{{ $item['charField9'] }}</p>
+                                    @endif
+                                    @if((!isset($item['charField8']) || trim($item['charField8']) === '') && 
+                                        (!isset($item['charField9']) || trim($item['charField9']) === ''))
+                                        <p class="fw-semibold mb-0 small">-</p>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-6" id="resellerPriceBox">
@@ -152,12 +176,14 @@
                             <div class="title text-primary mb-2">
                                 <i class="bi bi-people-fill me-1"></i> Reseller
                             </div>
-                            <p class="text-muted mb-1">Harga</p>
+                            
+                            {{-- HARGA --}}
+                            <p class="text-muted mb-1 small">Harga</p>
                             @if (!empty($hasMultiUnitPrices) && $hasMultiUnitPrices)
                                 @foreach($unitPrices as $unitName => $p)
                                     @if(isset($p['reseller']) && $p['reseller'] > 0)
                                         <h3 id="resellerPrice" class="price-reseller" data-unit="{{$unitName}}">
-                                            Rp {{ number_format($p['reseller'],0,',','.') }} / {{ strtoupper($unitName) }}
+                                            Rp {{ number_format($p['reseller'],0,',','.') }} <small>/ {{ strtoupper($unitName) }}</small>
                                         </h3>
                                     @endif
                                 @endforeach
@@ -165,10 +191,28 @@
                                 <h3 id="resellerPriceMain" class="price-reseller">
                                     Rp {{ number_format($prices['reseller'],0,',','.') }}
                                 </h3>
-                            @endif  
-                            <hr>
-                            <p class="text-muted mb-1">Garansi</p>
-                            <p class="fw-semibold">{{ $item['charField7'] ?? '-' }}</p>
+                            @endif
+                            
+                            <hr class="my-2">
+                            
+                            {{-- GARANSI --}}
+                            <div class="mb-2">
+                                <p class="text-muted mb-1 small">Garansi</p>
+                                <p class="fw-semibold mb-0">{{ $item['charField7'] ?? '-' }}</p>
+                            </div>
+                            
+                            {{-- KELENGKAPAN --}}
+                            <div class="kelengkapan-section">
+                                <p class="text-muted mb-1 small">Kelengkapan</p>
+                                <div class="kelengkapan-content">
+                                    @if(isset($item['charField8']) && trim($item['charField8']) !== '')
+                                        <p class="fw-semibold mb-1 small">{{ $item['charField8'] }}</p>
+                                    @endif
+                                    @if(!isset($item['charField8']) || trim($item['charField8']) === '')                                        
+                                        <p class="fw-semibold mb-0 small">-</p>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div> 

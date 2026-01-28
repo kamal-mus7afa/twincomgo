@@ -2,11 +2,11 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Twincomgo - Admin Panel</title>
     <link rel="icon" href="{{ asset('images/tw.png') }}" type="image/png">
 
-    {{-- ðŸ”¹ Library CSS --}}
+    {{-- Library CSS --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 
-    {{-- ðŸ”¹ Custom CSS --}}
+    {{-- Custom CSS --}}
     <style>
         :root {
             --primary: #0d9488;
@@ -29,31 +29,38 @@
             --sidebar-width: 280px;
             --sidebar-collapsed: 80px;
             --header-height: 80px;
+            --mobile-header-height: 70px;
+            --safe-area-top: env(safe-area-inset-top, 0px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         html, body {
             height: 100%;
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #0d9488 0%, #115e59 100%);
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         body {
             display: flex;
             position: relative;
+            padding-top: var(--safe-area-top);
+            padding-bottom: var(--safe-area-bottom);
         }
 
         /* ===== Glass Sidebar ===== */
         .sidebar {
             width: var(--sidebar-width);
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.12);
             backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             border-right: 1px solid rgba(255, 255, 255, 0.15);
             color: white;
             display: flex;
@@ -61,28 +68,26 @@
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: fixed;
             height: 100vh;
-            z-index: 1000;
+            z-index: 1002;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            transform: translateX(-100%);
+            will-change: transform;
         }
 
-        .sidebar.collapsed {
-            width: var(--sidebar-collapsed);
+        .sidebar.active {
+            transform: translateX(0);
         }
 
         .sidebar-header {
-            padding: 30px 25px;
+            padding: 20px 15px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .sidebar.collapsed .sidebar-header {
-            padding: 30px 15px;
+            min-height: var(--mobile-header-height);
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
             text-decoration: none;
             color: white;
         }
@@ -97,58 +102,42 @@
             justify-content: center;
             font-weight: bold;
             font-size: 18px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s ease;
-        }
-
-        .logo:hover .logo-icon {
-            transform: rotate(15deg);
+            flex-shrink: 0;
         }
 
         .logo-text {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
-            transition: opacity 0.3s ease;
             background: linear-gradient(to right, #ffffff, #e2e8f0);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-
-        .sidebar.collapsed .logo-text {
-            opacity: 0;
-            width: 0;
+            white-space: nowrap;
         }
 
         /* ===== Navigation ===== */
         .sidebar-nav {
             flex: 1;
-            padding: 25px 0;
+            padding: 15px 0;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .nav-item {
-            margin: 8px 15px;
+            margin: 5px 10px;
             border-radius: 12px;
             overflow: hidden;
-            transition: all 0.3s ease;
         }
 
         .nav-link {
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255, 255, 255, 0.9);
             display: flex;
             align-items: center;
-            gap: 15px;
-            padding: 15px 20px;
+            gap: 12px;
+            padding: 14px 16px;
             text-decoration: none;
             transition: all 0.3s ease;
-            position: relative;
             border-radius: 12px;
-        }
-
-        .nav-link:hover {
-            color: white;
-            background: rgba(255, 255, 255, 0.12);
-            transform: translateX(5px);
+            font-size: 15px;
         }
 
         .nav-link.active {
@@ -158,25 +147,15 @@
         }
 
         .nav-icon {
-            width: 24px;
+            width: 22px;
             text-align: center;
             font-size: 18px;
-            transition: transform 0.3s ease;
-        }
-
-        .nav-link:hover .nav-icon {
-            transform: scale(1.1);
+            flex-shrink: 0;
         }
 
         .nav-text {
             font-weight: 500;
             white-space: nowrap;
-            transition: opacity 0.3s ease;
-        }
-
-        .sidebar.collapsed .nav-text {
-            opacity: 0;
-            width: 0;
         }
 
         .nav-badge {
@@ -185,28 +164,88 @@
             color: white;
             padding: 2px 8px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
+            min-width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* ===== Main Wrapper ===== */
         .main-wrapper {
             flex: 1;
-            margin-left: var(--sidebar-width);
-            transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
             height: 100vh;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            width: 100%;
             position: relative;
+            overflow-x: hidden;
         }
 
-        .sidebar.collapsed ~ .main-wrapper {
-            margin-left: var(--sidebar-collapsed);
+        /* ===== Mobile Header ===== */
+        .mobile-header {
+            display: none;
+            height: var(--mobile-header-height);
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            padding: 0 15px;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: var(--safe-area-top);
+            left: 0;
+            right: 0;
+            z-index: 1001;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
 
-        /* ===== Glass Header ===== */
+        .mobile-menu-btn {
+            width: 45px;
+            height: 45px;
+            border: none;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-title {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--primary-darker));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            flex: 1;
+            padding: 0 10px;
+        }
+
+        .mobile-user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        /* ===== Glass Header (Desktop) ===== */
         .navbar-admin {
             height: var(--header-height);
             background: rgba(255, 255, 255, 0.85);
@@ -216,7 +255,6 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
         .header-left {
@@ -237,12 +275,6 @@
             justify-content: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(13, 148, 136, 0.3);
-        }
-
-        .toggle-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(13, 148, 136, 0.4);
         }
 
         .page-title h1 {
@@ -271,14 +303,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.3s ease;
             color: var(--dark);
-        }
-
-        .notification-bell:hover {
-            background: white;
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .notification-badge {
@@ -308,12 +333,6 @@
             color: white;
             font-weight: 600;
             font-size: 18px;
-            box-shadow: 0 4px 15px rgba(13, 148, 136, 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .user-avatar:hover {
-            transform: scale(1.05);
         }
 
         .user-info {
@@ -332,30 +351,76 @@
         }
 
         /* ===== Main Content ===== */
-        .navbar-admin {
-            position: relative;
-            z-index: 9999 !important;
-        }
-
         main {
             flex: 1;
             overflow-y: auto;
-            padding: 30px;
+            -webkit-overflow-scrolling: touch;
+            padding: 20px 15px;
             background: transparent;
+            padding-top: calc(var(--mobile-header-height) + 20px);
         }
 
         .content-wrapper {
-            background: rgba(255, 255, 255, 0.7);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.5);
             backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
+            -webkit-backdrop-filter: blur(10px);
+            margin-bottom: 20px;
         }
 
-        .content-wrapper:hover {
-            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.12);
+        /* ===== Mobile Bottom Navigation ===== */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            padding: 10px 0 var(--safe-area-bottom);
+            height: 70px;
+        }
+
+        .bottom-nav-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 100%;
+        }
+
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--secondary);
+            padding: 8px 12px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            flex: 1;
+            max-width: 80px;
+        }
+
+        .bottom-nav-item.active {
+            color: var(--primary);
+            background: rgba(13, 148, 136, 0.1);
+        }
+
+        .bottom-nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .bottom-nav-text {
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
         }
 
         /* ===== Footer ===== */
@@ -365,13 +430,31 @@
             border-top: 1px solid rgba(255, 255, 255, 0.3);
             color: var(--secondary);
             text-align: center;
-            padding: 20px;
-            font-size: 14px;
+            padding: 15px;
+            font-size: 13px;
+        }
+
+        /* ===== Overlay for Mobile Sidebar ===== */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+        }
+
+        .sidebar-overlay.active {
+            display: block;
         }
 
         /* ===== Scrollbar ===== */
         ::-webkit-scrollbar {
-            width: 6px;
+            width: 4px;
         }
 
         ::-webkit-scrollbar-track {
@@ -382,10 +465,6 @@
         ::-webkit-scrollbar-thumb {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-dark);
         }
 
         /* ===== Animations ===== */
@@ -438,70 +517,40 @@
         }
 
         .shape-1 {
-            width: 300px;
-            height: 300px;
-            top: -100px;
-            left: -100px;
+            width: 200px;
+            height: 200px;
+            top: -50px;
+            left: -50px;
         }
 
         .shape-2 {
-            width: 200px;
-            height: 200px;
-            bottom: -50px;
-            right: -50px;
-        }
-
-        .shape-3 {
             width: 150px;
             height: 150px;
-            top: 50%;
-            right: 10%;
-        }
-
-        /* ===== Responsive ===== */
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            
-            .sidebar.mobile-open {
-                transform: translateX(0);
-            }
-            
-            .main-wrapper {
-                margin-left: 0 !important;
-            }
-            
-            .user-info {
-                display: none;
-            }
-            
-            .page-title h1 {
-                font-size: 22px;
-            }
+            bottom: -30px;
+            right: -30px;
         }
 
         /* ===== Loader ===== */
         #loader-display {
-            display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.8);
             z-index: 9999;
             display: flex;
             justify-content: center;
             align-items: center;
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
         .loader-spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid var(--primary);
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -510,21 +559,193 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* ===== Responsive Breakpoints ===== */
+        /* Tablet & Desktop */
+        @media (min-width: 769px) {
+            .sidebar {
+                transform: translateX(0) !important;
+            }
+            
+            .sidebar.collapsed {
+                width: var(--sidebar-collapsed);
+            }
+            
+            .main-wrapper {
+                margin-left: var(--sidebar-width);
+            }
+            
+            .sidebar.collapsed ~ .main-wrapper {
+                margin-left: var(--sidebar-collapsed);
+            }
+            
+            .mobile-header,
+            .mobile-bottom-nav,
+            .sidebar-overlay {
+                display: none !important;
+            }
+            
+            .navbar-admin {
+                display: flex;
+                 position: relative;
+                z-index: 1050;
+            }
+            
+            main {
+                padding-top: 30px;
+                padding-left: 30px;
+                padding-right: 30px;
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .mobile-header {
+                display: flex;
+            }
+            
+            .mobile-bottom-nav {
+                display: block;
+            }
+            
+            .navbar-admin {
+                display: none;
+            }
+            
+            .main-wrapper {
+                margin-left: 0 !important;
+                padding-bottom: 70px;
+            }
+            
+            .sidebar {
+                width: 85%;
+                max-width: 320px;
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .sidebar-header {
+                padding-top: calc(var(--safe-area-top) + 15px);
+            }
+            
+            .logo-text {
+                font-size: 16px;
+            }
+            
+            .nav-link {
+                padding: 12px 15px;
+                font-size: 14px;
+            }
+            
+            .content-wrapper {
+                padding: 15px;
+                border-radius: 14px;
+            }
+            
+            .user-info {
+                display: none;
+            }
+            
+            .dropdown-menu {
+                position: fixed !important;
+                top: auto !important;
+                bottom: 80px !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                width: 90% !important;
+                max-width: 300px;
+                z-index: 1060;
+            }
+            
+            footer {
+                padding: 12px 15px;
+                font-size: 12px;
+            }
+            
+            .footer-mobile {
+                display: block;
+                text-align: center;
+                padding: 10px;
+                font-size: 11px;
+                color: var(--secondary);
+                margin-top: 10px;
+            }
+        }
+
+        /* Small Mobile */
+        @media (max-width: 480px) {
+            .mobile-title {
+                font-size: 16px;
+            }
+            
+            .mobile-menu-btn,
+            .mobile-user-avatar {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .content-wrapper {
+                padding: 12px;
+            }
+            
+            main {
+                padding: calc(var(--mobile-header-height) + 10px) 12px 20px;
+            }
+            
+            .bottom-nav-text {
+                font-size: 10px;
+            }
+            
+            .bottom-nav-icon {
+                font-size: 18px;
+            }
+        }
+
+        /* Landscape Mode */
+        @media (max-height: 600px) and (orientation: landscape) {
+            .mobile-bottom-nav {
+                display: none;
+            }
+            
+            main {
+                padding-bottom: 20px;
+            }
+            
+            .sidebar-nav {
+                max-height: 60vh;
+            }
+        }
     </style>
 
     @stack('styles')
 </head>
 <body>
 
-{{-- ðŸ”¹ Floating Background Elements --}}
+{{-- Floating Background Elements --}}
 <div class="floating-shapes">
     <div class="shape shape-1"></div>
     <div class="shape shape-2"></div>
-    <div class="shape shape-3"></div>
 </div>
 
-{{-- ðŸ”¹ Glass Sidebar --}}
-<aside class="sidebar animate__animated animate__fadeInLeft" id="sidebar">
+{{-- Mobile Overlay --}}
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+{{-- Mobile Header --}}
+<div class="mobile-header">
+    <button class="mobile-menu-btn" id="mobileToggleSidebar">
+        <i class="bi bi-list"></i>
+    </button>
+    <div class="mobile-title">@yield('page-title', 'Dashboard')</div>
+    <div class="mobile-user-avatar" onclick="toggleUserMenu()">
+        {{ substr(Auth::user()->name ?? 'A', 0, 1) }}
+    </div>
+</div>
+
+{{-- Glass Sidebar --}}
+<aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <a href="#" class="logo">
             <div class="logo-icon">
@@ -538,18 +759,17 @@
         @php
             $navItems = [
                 ['route' => 'admin.index', 'icon' => 'bi-speedometer2', 'label' => 'Dashboard', 'badge' => null],
-                ['route' => 'admin.user', 'icon' => 'bi-people', 'label' => 'Kelola Pengguna', 'badge' => null],
-                ['route' => 'admin.log', 'icon' => 'bi-archive', 'label' => 'Log Aktivitas', 'badge' => null],
-                // ['route' => 'items.index', 'icon' => 'bi-box-seam', 'label' => 'Stok Item', 'badge' => null],
-                // ['route' => 'users2.index', 'icon' => 'bi-person-bounding-box', 'label' => 'Accurate Users', 'badge' => null],
+                ['route' => 'admin.user', 'icon' => 'bi-people', 'label' => 'Pengguna', 'badge' => null],
+                ['route' => 'admin.log', 'icon' => 'bi-archive', 'label' => 'Log', 'badge' => null],
                 ['route' => 'aa.index', 'icon' => 'bi-diagram-3', 'label' => 'Accurate Token', 'badge' => null],
             ];
         @endphp
 
         @foreach ($navItems as $item)
-            <div class="nav-item animate-slide-in-left" style="animation-delay: {{ $loop->index * 0.1 }}s">
+            <div class="nav-item" style="animation-delay: {{ $loop->index * 0.1 }}s">
                 <a href="{{ route($item['route']) }}"
-                   class="nav-link {{ request()->routeIs($item['route']) ? 'active' : '' }}">
+                   class="nav-link {{ request()->routeIs($item['route']) ? 'active' : '' }}"
+                   onclick="closeSidebar()">
                     <i class="nav-icon bi {{ $item['icon'] }}"></i>
                     <span class="nav-text">{{ $item['label'] }}</span>
                     @if($item['badge'])
@@ -569,9 +789,9 @@
     </div>
 </aside>
 
-{{-- ðŸ”¹ Main Content Area --}}
-<div class="main-wrapper animate__animated animate__fadeIn">
-    {{-- Glass Header --}}
+{{-- Main Content Area --}}
+<div class="main-wrapper">
+    {{-- Glass Header (Desktop) --}}
     <nav class="navbar-admin">
         <div class="header-left">
             <button class="toggle-btn" id="toggleSidebar">
@@ -630,14 +850,19 @@
         <div class="content-wrapper animate-fade-in-up">
             @yield('content')
         </div>
+        
+        {{-- Mobile Footer --}}
+        <div class="footer-mobile">
+            © {{ date('Y') }} Cv Twin Group • v2.0
+        </div>
     </main>
 
-    {{-- Footer --}}
-    <footer class="animate__animated animate__fadeInUp">
+    {{-- Footer (Desktop) --}}
+    <footer class="d-none d-md-block">
         <div class="container-fluid">
             <div class="row align-items-center">
                 <div class="col-md-6 text-md-start text-center">
-                    <small>Â© {{ date('Y') }} Cv Twin Group â€” All rights reserved</small>
+                    <small>© {{ date('Y') }} Cv Twin Group — All rights reserved</small>
                 </div>
                 <div class="col-md-6 text-md-end text-center">
                     <small class="text-muted">
@@ -650,97 +875,209 @@
     </footer>
 </div>
 
-{{-- ðŸ”¹ Loader --}}
+{{-- Mobile Bottom Navigation --}}
+<div class="mobile-bottom-nav">
+    <div class="bottom-nav-container">
+        @php
+            $bottomNavItems = [
+                ['route' => 'admin.index', 'icon' => 'bi-speedometer2', 'label' => 'Home'],
+                ['route' => 'admin.user', 'icon' => 'bi-people', 'label' => 'Users'],
+                ['route' => 'admin.log', 'icon' => 'bi-archive', 'label' => 'Logs'],
+                ['route' => 'aa.index', 'icon' => 'bi-diagram-3', 'label' => 'Token'],
+            ];
+        @endphp
+        
+        @foreach ($bottomNavItems as $item)
+            <a href="{{ route($item['route']) }}" 
+               class="bottom-nav-item {{ request()->routeIs($item['route']) ? 'active' : '' }}"
+               onclick="showLoader()">
+                <i class="bottom-nav-icon bi {{ $item['icon'] }}"></i>
+                <span class="bottom-nav-text">{{ $item['label'] }}</span>
+            </a>
+        @endforeach
+        
+        <a href="#" class="bottom-nav-item" onclick="toggleUserMenu()">
+            <i class="bottom-nav-icon bi bi-person"></i>
+            <span class="bottom-nav-text">Logout</span>
+        </a>
+    </div>
+</div>
+
+{{-- Loader --}}
 <div id="loader-display">
     <div class="loader-spinner"></div>
 </div>
 
-{{-- ðŸ”¹ Script --}}
+{{-- Mobile User Menu Modal --}}
+<div class="modal fade" id="mobileUserMenu" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-bottom">
+        <div class="modal-content border-0 rounded-top-3">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">Menu Pengguna</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="list-group list-group-flush">
+                    <a href="#" class="list-group-item list-group-item-action border-0 py-3">
+                        <i class="bi bi-person me-3"></i>Profile
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action border-0 py-3">
+                        <i class="bi bi-gear me-3"></i>Settings
+                    </a>
+                    <div class="list-group-item border-0 py-3">
+                        <form action="{{ route('logout') }}" method="POST" class="w-100">
+                            @csrf
+                            <button type="submit" class="btn btn-danger w-100">
+                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Script --}}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 
 <script>
-    // Sidebar Toggle - Fixed version
-    $('#toggleSidebar').on('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        $('#sidebar').toggleClass('collapsed');
-        
-        // Remove any existing animation classes
-        $('#sidebar').removeClass('animate__fadeInLeft animate__fadeOutLeft');
-        
-        // Add appropriate animation
-        if ($('#sidebar').hasClass('collapsed')) {
-            $('#sidebar').addClass('animate__fadeOutLeft');
-            setTimeout(() => {
-                $('#sidebar').removeClass('animate__fadeOutLeft');
-            }, 500);
-        } else {
-            $('#sidebar').addClass('animate__fadeInLeft');
-            setTimeout(() => {
-                $('#sidebar').removeClass('animate__fadeInLeft');
-            }, 500);
-        }
-    });
+    // Mobile sidebar functionality
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const mobileToggleBtn = document.getElementById('mobileToggleSidebar');
+    const desktopToggleBtn = document.getElementById('toggleSidebar');
 
-    // Mobile sidebar handling
-    function handleMobileSidebar() {
-        if (window.innerWidth <= 768) {
-            $('#sidebar').removeClass('collapsed').addClass('mobile-open');
+    function openSidebar() {
+        sidebar.classList.add('active');
+        sidebarOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove('active');
+        sidebarOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function toggleSidebar() {
+        if (sidebar.classList.contains('active')) {
+            closeSidebar();
         } else {
-            $('#sidebar').removeClass('mobile-open');
+            openSidebar();
         }
     }
 
-    // Initialize
-    $(document).ready(function() {
-        handleMobileSidebar();
-        $(window).resize(handleMobileSidebar);
-        
-        // Add loading state to nav links
-        $('.nav-link').on('click', function(e) {
-            // Only show loader for external links, not for sidebar toggle
-            if (!$(this).attr('href') || $(this).attr('href') === '#') {
-                return;
-            }
-            $('#loader-display').fadeIn();
+    // Mobile toggle
+    if (mobileToggleBtn) {
+        mobileToggleBtn.addEventListener('click', toggleSidebar);
+    }
+
+    // Desktop toggle
+    if (desktopToggleBtn) {
+        desktopToggleBtn.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
         });
-        
-        // Remove loading when page is ready
-        $(window).on('load', function() {
-            $('#loader-display').fadeOut();
-        });
-        
-        // Add hover effect to content wrapper
-        $('.content-wrapper').hover(
-            function() {
-                $(this).css('transform', 'translateY(-5px)');
-            },
-            function() {
-                $(this).css('transform', 'translateY(0)');
-            }
-        );
+    }
+
+    // Close sidebar when clicking overlay
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', closeSidebar);
+    }
+
+    // Close sidebar when pressing ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeSidebar();
+        }
     });
 
-    // Notification bell animation
-    $('.notification-bell').on('click', function() {
-        $(this).addClass('animate__animated animate__tada');
-        setTimeout(() => {
-            $(this).removeClass('animate__animated animate__tada');
-        }, 1000);
+    // Mobile user menu
+    function toggleUserMenu() {
+        const userMenu = new bootstrap.Modal(document.getElementById('mobileUserMenu'));
+        userMenu.show();
+    }
+
+    // Loader functionality
+    function showLoader() {
+        document.getElementById('loader-display').style.display = 'flex';
+    }
+
+    function hideLoader() {
+        document.getElementById('loader-display').style.display = 'none';
+    }
+
+    // Handle link clicks
+    document.querySelectorAll('a[href]').forEach(link => {
+        if (link.getAttribute('href') !== '#' && !link.classList.contains('dropdown-toggle')) {
+            link.addEventListener('click', function(e) {
+                if (this.getAttribute('target') !== '_blank') {
+                    showLoader();
+                }
+            });
+        }
     });
+
+    // Handle page load
+    window.addEventListener('load', hideLoader);
     
-    document.addEventListener("DOMContentLoaded", function () {
-    // DOM selesai → matikan loader
-        $('#loader-display').fadeOut();
+    // Fallback for loader
+    setTimeout(hideLoader, 3000);
+
+    // Handle back/forward navigation
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+            hideLoader();
+        }
     });
-    
-    // Fallback anti macet
-    setTimeout(() => {
-        $('#loader-display').fadeOut();
-    }, 2500);
+
+    // Swipe to close sidebar on mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, false);
+
+    document.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        if (sidebar.classList.contains('active') && touchStartX - touchEndX > 50) {
+            closeSidebar();
+        }
+    }, false);
+
+    // Handle mobile viewport height
+    function setVH() {
+        let vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+
+    setVH();
+    window.addEventListener('resize', setVH);
+    window.addEventListener('orientationchange', setVH);
+
+    // Prevent zoom on double tap
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, false);
+
+    // Handle iOS safe area
+    function setSafeArea() {
+        document.documentElement.style.setProperty('--safe-area-top', env('safe-area-inset-top', '0px'));
+        document.documentElement.style.setProperty('--safe-area-bottom', env('safe-area-inset-bottom', '0px'));
+    }
+
+    if (CSS.supports('padding-top: env(safe-area-inset-top)')) {
+        setSafeArea();
+        window.addEventListener('resize', setSafeArea);
+    }
 </script>
 
 @stack('scripts')

@@ -4,8 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ItemController;
 use Illuminate\Support\Facades\Password;
+use App\Http\Controllers\ItemController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ResetController;
 use App\Http\Controllers\KaryawanController;
@@ -17,10 +17,14 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 
 
 
+
+Route::get('/', function () {
+    return redirect('/login'); 
+});
 // =================================================================================================================================
 //                                                       ROUTE LOGIN 
 // =================================================================================================================================
-    Route::get('/',         [AuthinticationController::class, 'index'])->middleware('guest')->name('auth.login');
+    Route::get('/login',         [AuthinticationController::class, 'index'])->middleware('guest')->name('auth.login');
     Route::post('/login',   [AuthinticationController::class, 'login'])->name('auth.login.post');
     Route::post('/logout',  [AuthinticationController::class, 'logout'])->name('logout');
 // =================================================================================================================================

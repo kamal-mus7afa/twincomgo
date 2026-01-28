@@ -18,7 +18,9 @@ class AuthinticationController extends Controller
             'password' => ['required']
         ]);
 
-        if(Auth::attempt($credentials)) {
+        $remember = $request->filled('remember');
+
+        if(Auth::attempt($credentials, $remember)) {
             // RESET antrian sebelum assign queue
             $request->session()->forget('wait_passed');
             $request->session()->forget('queue_number');

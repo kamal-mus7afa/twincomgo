@@ -106,7 +106,7 @@ class ItemController extends Controller
             $resp = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $token,
                 'X-Session-ID'  => $session,
-            ])->timeout(10)->get("$baseUrl/item/list.do", $query);
+            ])->timeout(60)->retry(3, 2000)->get("$baseUrl/item/list.do", $query);
 
             if (!$resp->successful()) break;
 
@@ -169,7 +169,7 @@ class ItemController extends Controller
                     $resp = Http::withHeaders([
                         'Authorization' => 'Bearer ' . $token,
                         'X-Session-ID'  => $session,
-                    ])->timeout(10)->get("$baseUrl/item/list.do", $query);
+                    ])->timeout(60)->retry(3, 2000)->get("$baseUrl/item/list.do", $query);
 
                     if (!$resp->successful()) break 2;
 
@@ -228,7 +228,7 @@ class ItemController extends Controller
                 $resp = Http::withHeaders([
                     'Authorization' => 'Bearer ' . $token,
                     'X-Session-ID'  => $session,
-                ])->timeout(10)->get("$baseUrl/item-category/list.do", [
+                ])->timeout(60)->retry(3, 2000)->get("$baseUrl/item-category/list.do", [
                     'sp.page'     => $page,
                     'sp.pageSize' => 100,
                     'fields'      => 'id,name,parent',
@@ -264,15 +264,15 @@ class ItemController extends Controller
     {
         $cacheKey = "price:{$itemId}:{$priceCategory}";
 
-        return Cache::remember($cacheKey, now()->addHours(6), function () use (
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () use (
             $itemId, $token, $session, $priceCategory
         ) {
             $resp = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $token,
                 'X-Session-ID'  => $session,
             ])
-            ->timeout(10)
-            ->retry(2, 500)
+            ->timeout(60)
+            ->retry(3, 2000)
             ->get("https://public.accurate.id/accurate/api/item/get-selling-price.do", [
                 'id' => $itemId,
                 'priceCategoryName' => $priceCategory,
@@ -302,7 +302,7 @@ class ItemController extends Controller
         // 🟩 KEY cache unik per item + mode harga
         $cacheKey = "price:{$id}:{$mode}";
 
-        $price = Cache::remember($cacheKey, now()->addHours(6), function () use ($id, $mode) {
+        $price = Cache::remember($cacheKey, now()->addMinutes(30), function () use ($id, $mode) {
 
             $acc = AccurateGlobal::token();
 
@@ -310,8 +310,8 @@ class ItemController extends Controller
                 'Authorization' => 'Bearer ' . $acc['access_token'],
                 'X-Session-ID'  => $acc['session_id'],
             ])
-            ->timeout(10)
-            ->retry(2, 500)
+            ->timeout(30)
+            ->retry(3, 2000)
             ->get("https://public.accurate.id/accurate/api/item/get-selling-price.do", [
                 'id' => $id,
                 'priceCategoryName' => $mode,
@@ -348,7 +348,7 @@ class ItemController extends Controller
         $resp = Http::withHeaders([
             'Authorization' => 'Bearer ' . $token,
             'X-Session-ID'  => $session,
-        ])->timeout(10)->get("https://public.accurate.id/accurate/api/item/detail.do", [
+        ])->timeout(60)->retry(3, 2000)->get("https://public.accurate.id/accurate/api/item/detail.do", [
             'id' => $id,
         ]);
 
@@ -422,7 +422,7 @@ class ItemController extends Controller
         $resp = Http::withHeaders([
             'Authorization' => 'Bearer ' . $token,
             'X-Session-ID'  => $session,
-        ])->timeout(10)->get("$baseUrl/item/list.do", [
+        ])->timeout(60)->retry(3, 2000)->get("$baseUrl/item/list.do", [
             'sp.page'         => 1,
             'sp.pageSize'     => 100,
             'fields'          => 'id,availableToSell',

@@ -140,6 +140,6 @@ class ResetPasswordController extends Controller
         $user->password = bcrypt($request->password);
         $user->save();
 
-        return redirect('/')->with('success', 'Password berhasil direset.');
+        return redirect()->route('auth.login')->with('success', 'Password berhasil direset, silakan login');
     }
 }

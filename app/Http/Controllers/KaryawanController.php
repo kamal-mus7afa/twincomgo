@@ -383,7 +383,7 @@ public function getPrice(Request $request, $id)
         $detailResp = Http::withHeaders([
             'Authorization' => "Bearer $token",
             'X-Session-ID'  => $session,
-        ])->timeout(8)->get("$baseUrl/item/detail.do", [
+        ])->timeout(30)->retry(2, 2000)->get("$baseUrl/item/detail.do", [
             'id' => $id,
         ]);
 
@@ -514,7 +514,7 @@ public function getPrice(Request $request, $id)
         $resp = Http::withHeaders([
             'Authorization' => "Bearer $token",
             'X-Session-ID'  => $session,
-        ])->get("https://public.accurate.id/accurate/api/item/get-on-sales.do", [
+        ])->timeout(60)->retry(2, 2000)->get("https://public.accurate.id/accurate/api/item/get-on-sales.do", [
             'id'            => $itemId,
             'warehouseName' => $warehouse,
             'branchName'    => $branch,
@@ -544,7 +544,7 @@ public function getPrice(Request $request, $id)
             $resp = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $token,
                 'X-Session-ID'  => $session,
-            ])->timeout(10)->get("{$baseUrl}/branch/list.do", [
+            ])->timeout(30)->retry(2, 2000)->get("{$baseUrl}/branch/list.do", [
                 'sp.page'     => $page,
                 'sp.pageSize' => 50,
             ]);
@@ -584,7 +584,7 @@ public function getPrice(Request $request, $id)
 
             $url = "https://public.accurate.id{$file}?session={$session}";
 
-            $resp = Http::timeout(10)->get($url);
+            $resp = Http::timeout(30)->retry(2, 2000)->get($url);
 
             if (!$resp->successful()) {
                 return response("", 200);
@@ -626,7 +626,7 @@ public function getPrice(Request $request, $id)
         $detailResp = Http::withHeaders([
             'Authorization' => "Bearer $token",
             'X-Session-ID'  => $session,
-        ])->timeout(10)->get("$baseUrl/item/detail.do", ['id' => $id]);
+        ])->timeout(30)->retry(2, 2000)->get("$baseUrl/item/detail.do", ['id' => $id]);
 
         $item = $detailResp->json()['d'] ?? null;
         if (!$item) abort(404, 'Gagal mengambil detail item.');
@@ -651,7 +651,7 @@ public function getPrice(Request $request, $id)
                 $resp = Http::withHeaders([
                     'Authorization' => "Bearer $token",
                     'X-Session-ID'  => $session,
-                ])->timeout(10)->get($url);
+                ])->timeout(30)->retry(2, 2000)->get($url);
 
                 if ($resp->successful()) {
                     $imagesBase64[] = 'data:image/jpeg;base64,' . base64_encode($resp->body());
@@ -879,7 +879,7 @@ public function getPrice(Request $request, $id)
         $resp = Http::withHeaders([
             'Authorization' => "Bearer {$token}",
             'X-Session-ID'  => $session,
-        ])->timeout(10)->get("https://public.accurate.id/accurate/api/item/get-on-sales.do", [
+        ])->timeout(30)->retry(2, 2000)->get("https://public.accurate.id/accurate/api/item/get-on-sales.do", [
             'id'            => $itemId,
             'warehouseName' => $warehouseName,
             'branchName'    => $branchName,

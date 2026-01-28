@@ -296,6 +296,43 @@
 .warehouse-card:nth-child(4) { animation-delay: 0.4s; }
 .warehouse-card:nth-child(5) { animation-delay: 0.5s; }
 
+/* Kelengkapan section */
+.kelengkapan-section {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+}
+
+.kelengkapan-content {
+    background-color: rgba(0, 0, 0, 0.02);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    border-left: 3px solid #e9ecef;
+}
+
+.kelengkapan-content p {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #495057;
+    margin-bottom: 0.25rem;
+}
+
+/* Text kecil untuk label */
+.price-box .small {
+    font-size: 0.85rem;
+}
+
+/* Responsive adjustments untuk mobile */
+@media (max-width: 768px) {    
+    .kelengkapan-content {
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .kelengkapan-content p {
+        font-size: 0.8rem;
+    }
+}
+
+
 </style>
 
 <div class="container-fluid">
@@ -403,10 +440,22 @@
 
                     <hr class="my-3">
 
-                    <div class="row">
+                    <div class="row mb-2">
                         <div class="col-md-6 col-12">
                             <div class="small text-muted">Garansi</div>
                             <div class="fw-semibold">{{ $item['charField7'] ?? '-' }}</div>
+                        </div>
+                    </div>
+
+                    <div class="kelengkapan-section">
+                        <p class="text-muted mb-1 small">Kelengkapan</p>
+                        <div class="kelengkapan-content">
+                            @if(isset($item['charField8']) && trim($item['charField8']) !== '')
+                                <p class="fw-semibold mb-1 small">{{ $item['charField8'] }}</p>
+                            @endif
+                            @if(!isset($item['charField8']) || trim($item['charField8']) === '')                                        
+                                <p class="fw-semibold mb-0 small">-</p>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -509,7 +558,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const warehouseName = row.closest("tr").children[0].innerText.trim();
                 const branchName = document.querySelector("#branchSelect")?.value || '';
 
-                fetch(`/twincomgo/ajax/warehouse-stock?id={{ $item['id'] }}&warehouse=${encodeURIComponent(warehouseName)}&branchName=${encodeURIComponent(branchName)}`)
+                fetch(`/ajax/warehouse-stock?id={{ $item['id'] }}&warehouse=${encodeURIComponent(warehouseName)}&branchName=${encodeURIComponent(branchName)}`)
                     .then(res => res.json())
                     .then(json => {
                         if (json.stock !== undefined) {

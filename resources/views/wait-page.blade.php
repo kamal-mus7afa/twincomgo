@@ -324,7 +324,6 @@
             <div class="loader-container">
                 <div class="loader">
                     <div class="loader-circle"></div>
-                    <div class="loader-inner-circle"></div>
                     <div class="loader-dot"></div>
                 </div>
             </div>
@@ -348,7 +347,7 @@
             
             <!-- Footer -->
             <div class="footer">
-                &copy; 2024 Twincomgo Enterprise. All rights reserved.
+                &copy; {{ date('Y') }} Twincomgo Enterprise. All rights reserved.
             </div>
         </div>
     </div>

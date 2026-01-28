@@ -12,6 +12,8 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
 
 
     <style>
@@ -105,84 +107,102 @@
             justify-content: center;
         }
         .input {
-        line-height: 28px;
-        border: 2px solid transparent;
-        border-bottom-color: #777;
-        padding: .2rem 0;
-        outline: none;
-        background-color: transparent;
-        color: #0d0c22;
-        transition: .3s cubic-bezier(0.645, 0.045, 0.355, 1);
+            line-height: 28px;
+            border: 2px solid transparent;
+            border-bottom-color: #777;
+            padding: .2rem 0;
+            outline: none;
+            background-color: transparent;
+            color: #0d0c22;
+            transition: .3s cubic-bezier(0.645, 0.045, 0.355, 1);
         }
 
         .input:focus, .input:hover {
-        outline: none;
-        padding: .2rem 1rem;
-        border-radius: 1rem;
-        border-color: #7a9cc6;
+            outline: none;
+            padding: .2rem 1rem;
+            border-radius: 1rem;
+            border-color: #7a9cc6;
         }
 
         .input::placeholder {
-        color: #777;
+            color: #777;
         }
 
         .input:focus::placeholder {
-        opacity: 0;
-        transition: opacity .3s;
+            opacity: 0;
+            transition: opacity .3s;
         }
+
+        .password-wrapper {
+    position: relative;
+}
+
+.toggle-password {
+    position: absolute;
+    top: 73%;
+    right: 15px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #777;
+    font-size: 16px;
+}
+
+.toggle-password:hover {
+    color: #7a9cc6;
+}
         /* From Uiverse.io by cssbuttons-io */ 
         .c-button {
-        color: #000;
-        font-weight: 700;
-        font-size: 16px;
-        text-decoration: none;
-        padding: 0.4em 1.1em;
-        cursor: pointer;
-        display: inline-block;
-        vertical-align: middle;
-        position: relative;
-        z-index: 1;
+            color: #000;
+            font-weight: 700;
+            font-size: 16px;
+            text-decoration: none;
+            padding: 0.4em 1.1em;
+            cursor: pointer;
+            display: inline-block;
+            vertical-align: middle;
+            position: relative;
+            z-index: 1;
         }
 
         .c-button--gooey {
-        color: #0649d9;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        border: 2px solid #0649d9;
-        border-radius: 10px;
-        position: relative;
-        transition: all 700ms ease;
+            color: #0649d9;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: 2px solid #0649d9;
+            border-radius: 10px;
+            position: relative;
+            transition: all 700ms ease;
         }
 
         .c-button--gooey .c-button__blobs {
-        height: 100%;
-        filter: url(#goo);
-        overflow: hidden;
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: -3px;
-        right: -1px;
-        z-index: -1;
+            height: 100%;
+            filter: url(#goo);
+            overflow: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: -3px;
+            right: -1px;
+            z-index: -1;
         }
 
         .c-button--gooey .c-button__blobs div {
-        background-color: #0649d9;
-        width: 34%;
-        height: 100%;
-        border-radius: 100%;
-        position: absolute;
-        transform: scale(1.4) translateY(125%) translateZ(0);
-        transition: all 700ms ease;
+            background-color: #0649d9;
+            width: 34%;
+            height: 100%;
+            border-radius: 100%;
+            position: absolute;
+            transform: scale(1.4) translateY(125%) translateZ(0);
+            transition: all 700ms ease;
         }
 
         .c-button--gooey .c-button__blobs div:nth-child(1) {
-        left: -5%;
+            left: -5%;
         }
 
         .c-button--gooey .c-button__blobs div:nth-child(2) {
-        left: 30%;
-        transition-delay: 60ms;
+            left: 30%;
+            transition-delay: 60ms;
         }
 
         .c-button--gooey .c-button__blobs div:nth-child(3) {
@@ -255,15 +275,20 @@
                             <input type="email" class="form-control input" id="email" name="email" required placeholder="Masukkan Email">
                         </div>
 
-                        <div class="mb-4">
+                        <div class="mb-2 password-wrapper">
                             <label for="password" class="form-label">Password</label>
                             <input type="password" class="form-control input" id="password" name="password" required placeholder="Masukkan Password">
-
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" type="checkbox" id="showPassword" onclick="togglePassword()">
-                                <label class="form-check-label" for="showPassword">Tampilkan Password</label>
-                            </div>
+                            <span class="toggle-password">
+                                <i class="fa fa-eye"></i>
+                            </span>
                         </div>
+                        <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="remember" id="remember" 
+                                    {{ old('remember') ? 'checked' : '' }}>
+                                <label class="form-check-label" for="remember">
+                                    Ingat Saya
+                                </label>
+                            </div>
                         <div class="text-end mt-3">
                             <small><a href="{{ route('showForgotForm') }}" style="text-decoration: none">Lupa password?</a></small>
                         </div>
@@ -294,10 +319,20 @@
 
 
     <script>
-        function togglePassword() {
-            const passwordField = document.getElementById("password");
-            passwordField.type = passwordField.type === "password" ? "text" : "password";
+        document.querySelectorAll('.toggle-password').forEach(toggle => {
+    toggle.addEventListener('click', function () {
+        const input = this.previousElementSibling;
+        const icon = this.querySelector('i');
+
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.replace("fa-eye", "fa-eye-slash");
+        } else {
+            input.type = "password";
+            icon.classList.replace("fa-eye-slash", "fa-eye");
         }
+    });
+});
     </script>
     <script>
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
@@ -360,5 +395,19 @@
             }).showToast();
         </script>
     @endif
+
+    @if (session('success'))
+        <script>
+            Toastify({
+                text: "{{ session('success') }}",
+                duration: 5000,
+                gravity: "top",
+                position: "center",
+                backgroundColor: "#10b981", // hijau sukses
+                stopOnFocus: true,
+            }).showToast();
+        </script>
+    @endif
+
 </body>
 </html>

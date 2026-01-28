@@ -404,4 +404,73 @@
     overflow-wrap: break-word;
     hyphens: auto;
 }
+
+/* Perbaikan untuk price box */
+.price-box h3 {
+    font-size: 1.4rem;
+    margin: 0.4rem 0;
+    line-height: 1.3;
+}
+
+.price-box h3 small {
+    font-size: 0.8rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.price-box hr {
+    margin: 0.8rem 0;
+    opacity: 0.2;
+}
+
+/* Kelengkapan section */
+.kelengkapan-section {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+}
+
+.kelengkapan-content {
+    background-color: rgba(0, 0, 0, 0.02);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    border-left: 3px solid #e9ecef;
+}
+
+.kelengkapan-content p {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #495057;
+    margin-bottom: 0.25rem;
+}
+
+/* Text kecil untuk label */
+.price-box .small {
+    font-size: 0.85rem;
+}
+
+/* Responsive adjustments untuk mobile */
+@media (max-width: 768px) {
+    .price-box h3 {
+        font-size: 1.3rem;
+    }
+    
+    .kelengkapan-content {
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .kelengkapan-content p {
+        font-size: 0.8rem;
+    }
+}
+
+/* Untuk extra small devices */
+@media (max-width: 576px) {
+    .price-box h3 {
+        font-size: 1.2rem;
+    }
+    
+    .price-box {
+        padding: 1rem !important;
+    }
+}
 </style>
