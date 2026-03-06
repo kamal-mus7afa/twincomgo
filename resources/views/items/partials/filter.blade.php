@@ -3,6 +3,19 @@
 @endif" id="filter-form">
     <div class="row g-2 justify-content-start">
 
+        <!-- Kategori -->
+        <div class="col-12 col-sm-12 col-md-12 col-lg-2">
+            <label class="form-label mb-1">Pilih Kategori</label>
+            <select name="category_id[]" id="category_search" class="form-select shadow-sm" multiple>
+                @foreach($categories as $cat)
+                    <option value="{{ $cat['id'] }}"
+                        {{ collect(request('category_id'))->contains($cat['id']) ? 'selected' : '' }}>
+                        {{ $cat['name'] }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
         <!-- Stok Ready -->
         <div class="col-6 col-sm-6 col-md-6 col-lg-auto">
             <label class="form-label mb-1">Stok Ready</label>
@@ -45,19 +58,6 @@
                     placeholder="0"
                     oninput="formatRupiahFilter(this)">
             </div>
-        </div>
-
-        <!-- Kategori -->
-        <div class="col-12 col-sm-12 col-md-12 col-lg-2">
-            <label class="form-label mb-1">Pilih Kategori</label>
-            <select name="category_id[]" id="category_search" class="form-select shadow-sm" multiple>
-                @foreach($categories as $cat)
-                    <option value="{{ $cat['id'] }}"
-                        {{ collect(request('category_id'))->contains($cat['id']) ? 'selected' : '' }}>
-                        {{ $cat['name'] }}
-                    </option>
-                @endforeach
-            </select>
         </div>
 
         <!-- Search -->

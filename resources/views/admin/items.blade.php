@@ -487,6 +487,24 @@
             padding-right: 0.75rem !important;
         }
 
+        .table-card {
+            background: none !important;
+            box-shadow: none !important;
+        }
+
+        .table-header {
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+
+        .table-header h3{
+            font-size: 1rem;
+        }
+
+        .per-page-select {
+            width: 50px !important;
+        }
+
         #header-total-items {
             width: auto !important;
         }
@@ -561,7 +579,7 @@
         /* 🔹 Style card produk di mobile */
         .product-card {
             border: 1px solid rgba(0, 0, 0, 0.08);
-            border-radius: 0.6rem;
+            border-radius: 20px;
             padding: 0.8rem;
             background: rgba(255, 255, 255, 0.96);
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
@@ -576,29 +594,8 @@
             gap: 6px;
         }
 
-        /* Nama Produk — boleh panjang, wrap, tapi tidak mendorong harga */
-        .product-title {
-            flex: 1;
-            min-width: 0;
-            font-size: 10px;
-            font-weight: 600;
-            color: #111;
-            line-height: 1.3;
-            white-space: normal;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
-
-        /* Harga — tidak boleh menyempit, tidak boleh terdorong */
-        .harga-grid {
-            flex-shrink: 0;
-            white-space: nowrap;
-            font-weight: 700;
-            font-size: 10px;
-        }
-
         .harga-rp {
-            font-size: 0.75rem;
+            font-size: 12px;
         }
 
         .harga-nominal {
@@ -622,15 +619,19 @@
         }
 
         .product-title {
-            flex: 1 1 65%; /* biar teks ambil ruang 65% */
+            flex: 1 1 75%; /* biar teks ambil ruang 65% */
             min-width: 0; /* biar teks bisa wrap */
+            font-size: 10px;
+            font-weight: 600;
+            color: #111;
+            line-height: 1.3;
             word-break: break-word;
             white-space: normal;
             overflow-wrap: anywhere;
         }
 
         .harga-grid {
-            flex: 0 0 35%; /* biar harga di kanan tetap sempit */
+            flex: 0 0 25%; /* biar harga di kanan tetap sempit */
             text-align: right;
         }
 
@@ -638,6 +639,11 @@
             font-size: 9px;
             color: #888;
             letter-spacing: 0.3px;
+        }
+
+        .pagination-section {
+            background: none !important;
+            border-top: none !important;
         }
     }
     @media (min-width: 768px) {
@@ -691,10 +697,10 @@
         <div class="table-header">
             <h3>
                 <i class="bi bi-grid-3x3-gap-fill"></i>
-                Products List
+                List Produk
             </h3>
             <div class="table-controls">
-                <span class="text-white-50">Items per page:</span>
+                <span class="text-white-50 text-page">Items per page:</span>
                 <select id="per_page" class="form-select per-page-select">
                     <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10</option>
                     <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20</option>
