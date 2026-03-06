@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Crypt;
 
 class AccurateGlobal
 {
-    public static function token()
+    public static function token(string $label = 'GLOBAL')
     {
         $account = DB::table('accurate_accounts')
             ->where('status', 'active')

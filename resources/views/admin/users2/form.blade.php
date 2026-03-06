@@ -290,6 +290,11 @@
         color: var(--danger);
     }
 
+    .status-user .status-icon {
+        background: rgba(68, 213, 239, 0.1);
+        color: var(--warning);
+    }
+
     .status-name {
         font-weight: 600;
         color: var(--dark);
@@ -595,6 +600,17 @@
                                             <i class="bi bi-shop"></i>
                                         </div>
                                         <span class="status-name">Reseller</span>
+                                    </label>
+                                </div>
+
+                                <div class="status-option status-user">
+                                    <input type="radio" name="status" value="USER" id="status_user" 
+                                           {{ old('status', $user->status) == 'USER' ? 'checked' : '' }} required>
+                                    <label class="status-label" for="status_user">
+                                        <div class="status-icon">
+                                            <i class="bi bi-people"></i>
+                                        </div>
+                                        <span class="status-name">User</span>   
                                     </label>
                                 </div>
                             </div>

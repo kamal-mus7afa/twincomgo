@@ -377,26 +377,6 @@
         margin-bottom: 0.5rem;
     }
 
-    /* ===== ALERTS ===== */
-    .alert {
-        border-radius: 16px;
-        border: none;
-        padding: 20px;
-        margin-bottom: 2rem;
-    }
-
-    .alert-success {
-        background: rgba(16, 185, 129, 0.1);
-        color: var(--success);
-        border: 1px solid rgba(16, 185, 129, 0.2);
-    }
-
-    .alert-danger {
-        background: rgba(239, 68, 68, 0.1);
-        color: var(--danger);
-        border: 1px solid rgba(239, 68, 68, 0.2);
-    }
-
     /* ===== PAGINATION ===== */
     .pagination-section {
         background: #f8fafc;
@@ -495,17 +475,6 @@
             <div class="stat-label">Showing</div>
         </div>
     </div>
-
-    {{-- ALERTS --}}
-    @if(session('ok'))
-        <div class="alert alert-success alert-dismissible fade show animate-card" style="animation-delay: 0.2s" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="bi bi-check-circle-fill me-2 fs-5"></i>
-                <div class="flex-grow-1">{{ session('ok') }}</div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        </div>
-    @endif
 
     @if(session('err'))
         <div class="alert alert-danger alert-dismissible fade show animate-card" style="animation-delay: 0.2s" role="alert">
@@ -656,6 +625,7 @@
 
 </div>
 
+@push('script')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize tooltips
@@ -686,4 +656,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+@if(session('ok'))
+    <script>
+        Toastify({
+            text: "{{ session('ok') }}",
+            duration: 5000,
+            gravity: "top", // top or bottom
+            position: "center", // left, center or right
+            backgroundColor: "#ff0000", // warna hijau sukses
+            stopOnFocus: true, 
+        }).showToast();
+    </script>
+@endif
+@endpush
 @endsection

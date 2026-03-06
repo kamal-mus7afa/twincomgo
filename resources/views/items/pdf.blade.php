@@ -167,7 +167,7 @@
         <div class="footer-content">
             <div class="footer-left">
                 <div>Dicetak oleh: {{ auth()->user()->name ?? 'System' }} | {{ now()->format('d M Y | H:i') }}</div>
-                <div class="company-address">CV TWIN GROUP - Jl. Kampung Baru RT.03 RW.02 Jl.Seroja No.11 Landasan Ulin, Banjarbaru</div>
+                <div class="company-address">TWINCOM GROUP - Jl. Kampung Baru RT.03 RW.02 Jl.Seroja No.11 Landasan Ulin, Banjarbaru</div>
             </div>
             <div class="footer-right">
                 Hal. <span class="page-number"></span>

@@ -55,6 +55,93 @@
             padding-bottom: var(--safe-area-bottom);
         }
 
+        /* ===== LOADER STYLING YANG DIPERBAIKI ===== */
+        #loader-display {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: opacity 0.3s ease;
+        }
+
+        .loader-container {
+            text-align: center;
+            transform: translateY(-20px);
+            animation: loaderFadeIn 0.5s ease forwards;
+        }
+
+        .loader-spinner {
+            width: 70px;
+            height: 70px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid var(--primary);
+            border-right: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 20px;
+            box-shadow: 0 0 20px rgba(13, 148, 136, 0.3);
+        }
+
+        .loader-text {
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            margin-top: 15px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .loader-progress {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin: 20px auto 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .loader-progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+            border-radius: 10px;
+            animation: progress 1.5s ease infinite;
+        }
+
+        @keyframes loaderFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(0);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(-20px);
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes progress {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+
         /* ===== Glass Sidebar ===== */
         .sidebar {
             width: var(--sidebar-width);
@@ -112,6 +199,28 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             white-space: nowrap;
+        }
+
+        .sidebar.collapsed .nav-text {
+            display: none;
+        }
+
+        .sidebar.collapsed .logo-text {
+            display: none;
+        }
+
+        .sidebar.collapsed .sidebar-footer {
+            display: none;
+        }
+
+        .sidebar.collapsed .nav-link {
+            justify-content: center;
+            padding: 14px 0;
+        }
+
+        .sidebar.collapsed .nav-icon {
+            margin: 0;
+            font-size: 20px;
         }
 
         /* ===== Navigation ===== */
@@ -530,36 +639,6 @@
             right: -30px;
         }
 
-        /* ===== Loader ===== */
-        #loader-display {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-
-        .loader-spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top: 3px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         /* ===== Responsive Breakpoints ===== */
         /* Tablet & Desktop */
         @media (min-width: 769px) {
@@ -587,7 +666,7 @@
             
             .navbar-admin {
                 display: flex;
-                 position: relative;
+                position: relative;
                 z-index: 1050;
             }
             
@@ -595,6 +674,34 @@
                 padding-top: 30px;
                 padding-left: 30px;
                 padding-right: 30px;
+            }
+            
+            .sidebar.collapsed .nav-text,
+            .sidebar.collapsed .logo-text,
+            .sidebar.collapsed .sidebar-footer {
+                display: none;
+            }
+
+            .sidebar.collapsed .nav-link {
+                justify-content: center;
+                padding: 14px 0;
+            }
+
+            .sidebar.collapsed .nav-icon {
+                margin: 0;
+                font-size: 20px;
+            }
+
+            .sidebar.collapsed .nav-badge {
+                display: none;
+            }
+
+            .sidebar.collapsed {
+                width: var(--sidebar-collapsed);
+            }
+
+            .sidebar.collapsed ~ .main-wrapper {
+                margin-left: var(--sidebar-collapsed);
             }
         }
 
@@ -673,6 +780,22 @@
                 color: var(--secondary);
                 margin-top: 10px;
             }
+            
+            .sidebar.collapsed {
+                width: 85%;
+                max-width: 320px;
+            }
+            
+            .sidebar.collapsed .nav-text,
+            .sidebar.collapsed .logo-text,
+            .sidebar.collapsed .sidebar-footer {
+                display: block;
+            }
+            
+            .sidebar.collapsed .nav-link {
+                justify-content: flex-start;
+                padding: 12px 15px;
+            }
         }
 
         /* Small Mobile */
@@ -730,6 +853,17 @@
     <div class="shape shape-2"></div>
 </div>
 
+{{-- LOADER DISPLAY --}}
+<div id="loader-display">
+    <div class="loader-container">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Loading...</div>
+        <div class="loader-progress">
+            <div class="loader-progress-bar"></div>
+        </div>
+    </div>
+</div>
+
 {{-- Mobile Overlay --}}
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
@@ -760,6 +894,7 @@
             $navItems = [
                 ['route' => 'admin.index', 'icon' => 'bi-speedometer2', 'label' => 'Dashboard', 'badge' => null],
                 ['route' => 'admin.user', 'icon' => 'bi-people', 'label' => 'Pengguna', 'badge' => null],
+                ['route' => 'admin.items', 'icon' => 'bi-box-seam', 'label' => 'Barang & Jasa', 'badge' => null],
                 ['route' => 'admin.log', 'icon' => 'bi-archive', 'label' => 'Log', 'badge' => null],
                 ['route' => 'aa.index', 'icon' => 'bi-diagram-3', 'label' => 'Accurate Token', 'badge' => null],
             ];
@@ -850,11 +985,6 @@
         <div class="content-wrapper animate-fade-in-up">
             @yield('content')
         </div>
-        
-        {{-- Mobile Footer --}}
-        <div class="footer-mobile">
-            © {{ date('Y') }} Cv Twin Group • v2.0
-        </div>
     </main>
 
     {{-- Footer (Desktop) --}}
@@ -862,7 +992,7 @@
         <div class="container-fluid">
             <div class="row align-items-center">
                 <div class="col-md-6 text-md-start text-center">
-                    <small>© {{ date('Y') }} Cv Twin Group — All rights reserved</small>
+                    <small>© {{ date('Y') }} Twincom Group — All rights reserved</small>
                 </div>
                 <div class="col-md-6 text-md-end text-center">
                     <small class="text-muted">
@@ -882,6 +1012,7 @@
             $bottomNavItems = [
                 ['route' => 'admin.index', 'icon' => 'bi-speedometer2', 'label' => 'Home'],
                 ['route' => 'admin.user', 'icon' => 'bi-people', 'label' => 'Users'],
+                ['route' => 'admin.items', 'icon' => 'bi-box-seam', 'label' => 'Barjas'],
                 ['route' => 'admin.log', 'icon' => 'bi-archive', 'label' => 'Logs'],
                 ['route' => 'aa.index', 'icon' => 'bi-diagram-3', 'label' => 'Token'],
             ];
@@ -901,11 +1032,6 @@
             <span class="bottom-nav-text">Logout</span>
         </a>
     </div>
-</div>
-
-{{-- Loader --}}
-<div id="loader-display">
-    <div class="loader-spinner"></div>
 </div>
 
 {{-- Mobile User Menu Modal --}}
@@ -949,6 +1075,8 @@
     const sidebarOverlay = document.getElementById('sidebarOverlay');
     const mobileToggleBtn = document.getElementById('mobileToggleSidebar');
     const desktopToggleBtn = document.getElementById('toggleSidebar');
+    const loader = document.getElementById('loader-display');
+    let loaderTimeout;
 
     function openSidebar() {
         sidebar.classList.add('active');
@@ -975,12 +1103,62 @@
         mobileToggleBtn.addEventListener('click', toggleSidebar);
     }
 
-    // Desktop toggle
-    if (desktopToggleBtn) {
-        desktopToggleBtn.addEventListener('click', function() {
-            sidebar.classList.toggle('collapsed');
+    // ===== SIDEBAR STATE MANAGEMENT =====
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById('sidebar');
+        const desktopToggleBtn = document.getElementById('toggleSidebar');
+        
+        // Nonaktifkan transisi sementara untuk menghindari flicker
+        sidebar.classList.add('no-transition');
+        
+        // Cek apakah ada state tersimpan
+        const sidebarState = localStorage.getItem('sidebar_collapsed');
+        
+        // Terapkan state yang tersimpan (hanya untuk desktop)
+        if (window.innerWidth >= 769) {
+            if (sidebarState === 'true') {
+                sidebar.classList.add('collapsed');
+            } else {
+                sidebar.classList.remove('collapsed');
+            }
+        }
+        
+        // Aktifkan kembali transisi setelah state diterapkan
+        setTimeout(() => {
+            sidebar.classList.remove('no-transition');
+        }, 100);
+        
+        // Toggle sidebar dan simpan state
+        if (desktopToggleBtn) {
+            // Hapus event listener lama untuk menghindari duplikasi
+            desktopToggleBtn.removeEventListener('click', function() {});
+            
+            desktopToggleBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                
+                // Simpan state ke localStorage (hanya untuk desktop)
+                if (window.innerWidth >= 769) {
+                    const isCollapsed = sidebar.classList.contains('collapsed');
+                    localStorage.setItem('sidebar_collapsed', isCollapsed);
+                }
+            });
+        }
+        
+        // Reset state saat resize dari mobile ke desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 769) {
+                const savedState = localStorage.getItem('sidebar_collapsed');
+                if (savedState === 'true') {
+                    sidebar.classList.add('collapsed');
+                } else {
+                    sidebar.classList.remove('collapsed');
+                }
+            } else {
+                // Di mobile, collapsed tidak berlaku
+                sidebar.classList.remove('collapsed');
+            }
         });
-    }
+    });
 
     // Close sidebar when clicking overlay
     if (sidebarOverlay) {
@@ -1000,38 +1178,88 @@
         userMenu.show();
     }
 
-    // Loader functionality
-    function showLoader() {
-        document.getElementById('loader-display').style.display = 'flex';
-    }
+// ===== LOADER FUNCTIONALITY =====
+function showLoader() {
+    if (loaderTimeout) clearTimeout(loaderTimeout);
+    loader.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
 
-    function hideLoader() {
-        document.getElementById('loader-display').style.display = 'none';
-    }
+function hideLoader() {
+    loaderTimeout = setTimeout(() => {
+        loader.style.display = 'none';
+        document.body.style.overflow = '';
+    }, 300);
+}
 
-    // Handle link clicks
-    document.querySelectorAll('a[href]').forEach(link => {
-        if (link.getAttribute('href') !== '#' && !link.classList.contains('dropdown-toggle')) {
-            link.addEventListener('click', function(e) {
-                if (this.getAttribute('target') !== '_blank') {
-                    showLoader();
-                }
-            });
-        }
-    });
-
-    // Handle page load
-    window.addEventListener('load', hideLoader);
+// Handle link clicks
+document.addEventListener('click', function(e) {
+    const link = e.target.closest('a');
+    const clickableRow = e.target.closest('[onclick*="window.location"]');
     
-    // Fallback for loader
-    setTimeout(hideLoader, 3000);
+    // Jika bukan link dan bukan row yang bisa diklik, return
+    if (!link && !clickableRow) return;
+    
+    // CEK APAKAH INI AJAX (dengan melihat apakah event dicegah defaultnya)
+    // atau link memiliki attribute data-ajax / data-no-loader
+    if (e.defaultPrevented || 
+        (link && (link.hasAttribute('data-ajax') || link.hasAttribute('data-no-loader')))) {
+        return; // Ini AJAX, jangan trigger loader
+    }
+    
+    // Jika link memiliki href yang valid dan bukan anchor
+    if (link) {
+        const href = link.getAttribute('href');
+        if (href && href !== '#' && !href.startsWith('#') && 
+            link.getAttribute('target') !== '_blank') {
+            
+            // Cek apakah link ke halaman yang sama (anchor)
+            if (href.startsWith(window.location.origin) || href.startsWith('/')) {
+                const url = new URL(href, window.location.origin);
+                if (url.pathname === window.location.pathname && url.hash) {
+                    return; // Anchor di halaman yang sama
+                }
+            }
+            
+            showLoader();
+        }
+    }
+    
+    // Jika row yang diklik (onclick navigasi)
+    if (clickableRow) {
+        showLoader();
+    }
+});
 
+// Handle form submissions
+document.addEventListener('submit', function(e) {
+    // Jika form tidak menggunakan AJAX (tidak ada preventDefault)
+    if (!e.defaultPrevented) {
+        showLoader();
+    }
+});
+    // Handle page load selesai
+    window.addEventListener('load', function() {
+        hideLoader();
+    });
+    
     // Handle back/forward navigation
     window.addEventListener('pageshow', function(event) {
         if (event.persisted) {
             hideLoader();
         }
     });
+
+    // Fallback untuk memastikan loader hilang
+    window.addEventListener('beforeunload', function() {
+        // Clear timeout saat page ditinggalkan
+        if (loaderTimeout) {
+            clearTimeout(loaderTimeout);
+        }
+    });
+
+    // Hide loader setelah 5 detik maksimal (fallback)
+    setTimeout(hideLoader, 5000);
 
     // Swipe to close sidebar on mobile
     let touchStartX = 0;
@@ -1070,8 +1298,8 @@
 
     // Handle iOS safe area
     function setSafeArea() {
-        document.documentElement.style.setProperty('--safe-area-top', env('safe-area-inset-top', '0px'));
-        document.documentElement.style.setProperty('--safe-area-bottom', env('safe-area-inset-bottom', '0px'));
+        document.documentElement.style.setProperty('--safe-area-top', getComputedStyle(document.documentElement).getPropertyValue('env(safe-area-inset-top)') || '0px');
+        document.documentElement.style.setProperty('--safe-area-bottom', getComputedStyle(document.documentElement).getPropertyValue('env(safe-area-inset-bottom)') || '0px');
     }
 
     if (CSS.supports('padding-top: env(safe-area-inset-top)')) {

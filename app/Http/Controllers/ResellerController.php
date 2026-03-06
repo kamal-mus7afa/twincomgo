@@ -2,23 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
 use App\Helpers\AccurateGlobal;
-use App\Models\AccurateAccount;
-use Illuminate\Support\Facades\Log;
-use Vinkla\Hashids\Facades\Hashids;
+use App\Services\Accurate\CategoryService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
-use App\Services\Accurate\AccurateClient;
-use App\Services\Accurate\SessionResolver;
+use Illuminate\Support\Facades\Http;
+use Vinkla\Hashids\Facades\Hashids;
 
 class ResellerController extends Controller
 {
     private function fetchItemsForList(Request $request)
     {
-        $acc     = AccurateGlobal::token();
+        $status = strtoupper(trim(Auth::user()->status ?? ''));
+
+        $label = in_array($status, ['GLOBAL', 'RESELLER'])
+            ? $status
+            : 'GLOBAL';
+        // dd($label);
+        $acc     = AccurateGlobal::token($label);
         $token   = $acc['access_token'];
         $session = $acc['session_id'];
         $baseUrl = rtrim(config('services.accurate.base_api'), '/');
@@ -56,14 +58,23 @@ class ResellerController extends Controller
         $pageAcc     = 1;
 
         $rowsNeeded = $targetBase; // FIX: variabel wajib
+        $allowedCategoryIds = app(CategoryService::class)
+        ->all()
+        ->pluck('id')
+        ->flip(); // buat lookup cepat
 
         // ----------------------------------------------------
         //     HELPER FILTER ( harga + stok + push buffer )
         // ----------------------------------------------------
         $processRow = function (&$buffer, $row) use (
             $stokAda, $usePriceFilter, $minPrice, $maxPrice,
-            $token, $session, $priceCategory
+            $token, $session, $priceCategory, $allowedCategoryIds,
         ) {
+            $itemCategoryId = $row['itemCategory']['id'] ?? null;
+
+            if (!$itemCategoryId || !isset($allowedCategoryIds[$itemCategoryId])) {
+                return false;
+            }
 
             if ($stokAda === '1' && ($row['availableToSell'] ?? 0) <= 0) {
                 return false;
@@ -90,7 +101,7 @@ class ResellerController extends Controller
             $query = [
                 'sp.page'         => $pageAcc,
                 'sp.pageSize'     => 100,
-                'fields'          => 'id,name,no,availableToSell,itemCategory.name,availableToSellInAllUnit,detailItemImage',
+                'fields'          => 'id,name,no,availableToSell,itemCategory.name,availableToSellInAllUnit,detailItemImage,itemCategory',
                 'filter.suspended'=> false,
             ];
 
@@ -102,7 +113,10 @@ class ResellerController extends Controller
 
             // CATEGORY FILTER
             if (!empty($categoryId)) {
-                $query['filter.itemCategoryId'] = $categoryId;
+                $query['filter.itemCategoryId.op'] = 'EQUAL';
+                foreach ($categoryId as $i => $id) {
+                    $query["filter.itemCategoryId.val[$i]"] = $id;
+                }
             }
 
             $resp = Http::withHeaders([
@@ -160,7 +174,11 @@ class ResellerController extends Controller
                     }
 
                     if (!empty($categoryId)) {
-                        $query['filter.itemCategoryId'] = $categoryId;
+                        $query['filter.itemCategoryId.op'] = 'EQUAL';
+                        $query['filter.itemCategoryId.op'] = 'EQUAL';
+                        foreach ($categoryId as $i => $id) {
+                            $query["filter.itemCategoryId.val[$i]"] = $id;
+                        }
                     }
 
                     $resp = Http::withHeaders([
@@ -195,13 +213,14 @@ class ResellerController extends Controller
 
         // Gambar + encrypted ID
         $items = $items->map(function ($item) {
+            $item['category_id'] = $item['itemCategory']['id'] ?? null;
             $item['fileName'] = collect($item['detailItemImage'] ?? [])
                 ->pluck('fileName')->filter()->values()->toArray();
 
             $item['encryptedId'] = Hashids::encode($item['id']);
             return $item;
         });
-
+        
         return [
             'items'      => $items,
             'page'       => $pageWeb,
@@ -214,49 +233,16 @@ class ResellerController extends Controller
     // ===================================================
     //                        INDEX
     // ===================================================
-    public function index2(Request $request)
+    public function index2(Request $request, CategoryService $categories)
     {
         $data = $this->fetchItemsForList($request);
-
-        // CACHE CATEGORY (tidak bikin 503)
-        $categories = Cache::remember("accurate:categories:global", 86400, function () {
-            $acc = AccurateGlobal::token();
-            $token   = $acc['access_token'];
-            $session = $acc['session_id'];
-            $baseUrl = rtrim(config('services.accurate.base_api'), '/');
-
-            $cats = collect();
-            $page = 1;
-
-            do {
-                $resp = Http::withHeaders([
-                    'Authorization' => 'Bearer ' . $token,
-                    'X-Session-ID'  => $session,
-                ])->timeout(60)->retry(3, 2000)->get("$baseUrl/item-category/list.do", [
-                    'sp.page'     => $page,
-                    'sp.pageSize' => 100,
-                    'fields'      => 'id,name,parent',
-                ]);
-
-                if (!$resp->successful()) break;
-
-                $json = $resp->json();
-                $cats = $cats->merge($json['d'] ?? []);
-
-                $page++;
-                $pageCount = $json['sp']['pageCount'] ?? 1;
-
-            } while ($page <= $pageCount);
-
-            return $cats->values();
-        });
-
+        // dd($data, $categories->all());
         return view('reseller.index', [
             'items'      => $data['items'],
             'page'       => $data['page'],
             'pageCount'  => $data['pageCount'],
             'totalItems' => $data['totalItems'],
-            'categories' => $categories,
+            'categories' => $categories->all(),
             'filters'    => $data['filters'],
         ]);
     }
@@ -310,7 +296,12 @@ class ResellerController extends Controller
             ]);
         }
 
-        $acc     = AccurateGlobal::token();
+        $status = strtoupper(trim(Auth::user()->status ?? ''));
+
+        $label = in_array($status, ['GLOBAL', 'RESELLER'])
+            ? $status
+            : 'GLOBAL';
+        $acc     = AccurateGlobal::token($label);
         $token   = $acc['access_token'];
         $session = $acc['session_id'];
 
@@ -403,7 +394,12 @@ class ResellerController extends Controller
         // ============================================================
         // 🔹 Ambil token & session dari AccurateGlobal
         // ============================================================
-        $acc = AccurateGlobal::token();
+        $status = strtoupper(trim(Auth::user()->status ?? ''));
+
+        $label = in_array($status, ['GLOBAL', 'RESELLER'])
+            ? $status
+            : 'GLOBAL';
+        $acc     = AccurateGlobal::token($label);
         $token = $acc['access_token'];
         $session = $acc['session_id'];
         $branchName = $request->input('branchName');
@@ -420,6 +416,8 @@ class ResellerController extends Controller
         if (!$item) {
             return back()->with('error', 'Gagal mengambil data item dari Accurate.');
         }
+
+        $catId = $item['itemCategoryId'];
 
         $fileName = collect($item['detailItemImage'] ?? [])->pluck('fileName')->filter()->values()->toArray();
 
@@ -527,55 +525,6 @@ class ResellerController extends Controller
 
         $hasMultiUnitPrices = count($unitPrices) > 1;
 
-
-        // // ============================================================
-        // // 🔹 Ambil dua harga: USER & RESELLER
-        // // ============================================================
-        // $prices = [];
-
-        // // Harga USER
-        // $defaultResp = Http::withHeaders([
-        //     'Authorization' => 'Bearer ' . $token,
-        //     'X-Session-ID'  => $session,
-        // ])->get("https://public.accurate.id/accurate/api/item/get-selling-price.do", [
-        //     'id' => $id,
-        //     'branchName' => $branchName, // 🔹 tambahan penting
-        // ]);
-
-        
-        // $userPrice = $defaultResp['d']['unitPrice']
-        // ?? ($defaultResp['d']['unitPriceRule'][0]['price'] ?? 0);
-
-        // $discountRule = $defaultResp['d']['discountRule'][0] ?? null;
-        // if ($discountRule && isset($discountRule['discount']) && is_numeric($discountRule['discount'])) {
-        //     $discountPercent = floatval($discountRule['discount']);
-        //     $userPrice -= ($userPrice * $discountPercent / 100);
-        // }
-        
-        // $prices['user'] = $userPrice;
-
-        // // Harga RESELLER
-        // $resellerResp = Http::withHeaders([
-        //     'Authorization' => 'Bearer ' . $token,
-        //     'X-Session-ID'  => $session,
-        // ])->get("https://public.accurate.id/accurate/api/item/get-selling-price.do", [
-        //     'id' => $id,
-        //     'priceCategoryName' => 'RESELLER',
-        //     'discountCategoryName' => 'RESELLER',
-        //     'branchName' => $branchName, // 🔹 tambahan penting
-        // ]);
-
-        // $resellerPrice = $resellerResp['d']['unitPrice']
-        //     ?? ($resellerResp['d']['unitPriceRule'][0]['price'] ?? 0);
-
-        // // Diskon kalau ada
-        // $discountRule = $resellerResp['d']['discountRule'][0] ?? null;
-        // if ($discountRule && isset($discountRule['discount']) && is_numeric($discountRule['discount'])) {
-        //     $discountPercent = floatval($discountRule['discount']);
-        //     $resellerPrice -= ($resellerPrice * $discountPercent / 100);
-        // }
-        // $prices['reseller'] = $resellerPrice;
-
         /** ---------------------------------------------
          * 5. GUDANG AWAL (belum realtime)
          * --------------------------------------------- */
@@ -592,17 +541,7 @@ class ResellerController extends Controller
         $groups = [
             'store' => [
                 'TSTORE KAYUTANGI','TSTORE BANJARBARU A. YANI','TSTORE BANJARBARU P. BATUR',
-                'TSTORE BELITUNG','TSTORE MARTAPURA','TDC','STORE PALANGKARAYA','LANDASAN ULIN',
-            ],
-            'tsc' => [
-                'TSC BANJARBARU A. YANI','TSC BANJARBARU P. BATUR','TSC BELITUNG','TSC KAYUTANGI',
-                'TSC LANDASAN ULIN','TSC MARTAPURA','TSC PALANGKARAYA',
-            ],
-            'panda' => [
-                'PANDA STORE BANJARBARU','PANDA SC BANJARBARU',
-            ],
-            'reseller' => [
-                'RESELLER ZAKI','RESELLER MARDANI',
+                'TSTORE BELITUNG','TSTORE MARTAPURA','TDC','STORE PALANGKARAYA','LANDASAN ULIN','TDC-2',
             ],
         ];
 
@@ -615,10 +554,12 @@ class ResellerController extends Controller
             )->values();
         }
 
-        $warehousesKonsinyasi = $warehouses->filter(function($w){
-            return isset($w['description']) 
-                && Str::contains(strtolower($w['description']), 'konsinyasi');
-        })->values();
+        $userWarehouse = strtoupper(auth()->user()->name);
+
+        $warehousesUser = $warehouses->filter(fn($w) =>
+            strtoupper($w['name'] ?? '') === $userWarehouse
+        )->values();
+        
 
         /** ---------------------------------------------
          * 8. PROSES UNIT (balanceUnit parsing)
@@ -666,20 +607,15 @@ class ResellerController extends Controller
 
         // Apply processing
         $warehousesStore      = $processUnit($warehousesStore);
-        $warehousesTsc        = $processUnit($warehousesTsc);
-        $warehousesReseller   = $processUnit($warehousesReseller);
-        $warehousesKonsinyasi = $processUnit($warehousesKonsinyasi);
-        $warehousesPanda      = $processUnit($warehousesPanda);
+        $warehousesUser      = $processUnit($warehousesUser);
 
         /** ---------------------------------------------
          * 9. HILANGKAN STOK 0
          * --------------------------------------------- */
         $warehousesStore      = $warehousesStore->filter(fn($w) => ($w['balance'] ?? 0) > 0)->values();
-        $warehousesTsc        = $warehousesTsc->filter(fn($w) => ($w['balance'] ?? 0) > 0)->values();
-        $warehousesReseller   = $warehousesReseller->filter(fn($w) => ($w['balance'] ?? 0) > 0)->values();
-        $warehousesKonsinyasi = $warehousesKonsinyasi->filter(fn($w) => ($w['balance'] ?? 0) > 0)->values();
-        $warehousesPanda      = $warehousesPanda->filter(fn($w) => ($w['balance'] ?? 0) > 0)->values();
+        $warehousesUser      = $warehousesUser->filter(fn($w) => ($w['balance'] ?? 0) > 0)->values();
         
+        // dd($catId);
 
         return view('reseller.detail', [
             'item'       => $item,
@@ -694,10 +630,8 @@ class ResellerController extends Controller
             'hasMultiUnitPrices' => $hasMultiUnitPrices,
             // Kirim ke Blade
             'warehousesStore'      => $warehousesStore,
-            'warehousesTsc'        => $warehousesTsc,
-            'warehousesReseller'   => $warehousesReseller,
-            'warehousesKonsinyasi' => $warehousesKonsinyasi,
-            'warehousesPanda'      => $warehousesPanda,
+            'warehousesUser'       => $warehousesUser,
+            'catId' => $catId,
         ]);
     }
 
@@ -705,7 +639,12 @@ class ResellerController extends Controller
     {
         $branchName = $request->input('branchName');
 
-        $acc = AccurateGlobal::token();
+        $status = strtoupper(trim(Auth::user()->status ?? ''));
+
+        $label = in_array($status, ['GLOBAL', 'RESELLER'])
+            ? $status
+            : 'GLOBAL';
+        $acc     = AccurateGlobal::token($label);
         $token = $acc['access_token'];
         $session = $acc['session_id'];
 

@@ -166,6 +166,9 @@ main {
 .price-box.reseller {
     border-top: 3px solid #0d6efd;
 }
+.price-box.partner {
+    border-top: 3px solid #250dfd;
+}
 .price-label {
     font-size: 10px;
     color: #666;
@@ -180,6 +183,9 @@ main {
 }
 .price-reseller {
     color: #0d6efd;
+}
+.price-partner {
+    color: #250dfd;
 }
 .warranty-info {
     font-size: 10px;
@@ -275,7 +281,7 @@ tfoot tr {
         <div class="logo-section">
             <img src="{{ base_path('images/logo-hijau.png') }}" alt="Twincomgo Logo" style="margin-bottom:10px;">
             <div class="company-info">
-                <div class="company-name">CV. TWIN GROUP</div>
+                <div class="company-name">TWINCOM GROUP</div>
                 <div class="company-tagline">Sistem Informasi Stok Barang</div>
             </div>
         </div>
@@ -288,7 +294,7 @@ tfoot tr {
     <div class="footer-content">
         <div class="footer-left">
             <div>Dicetak oleh: Sistem Twincomgo | {{ now()->format('d M Y, H:i') }}</div>
-            <div class="company-address">CV TWIN GROUP - Jl. Kampung Baru RT.03 RW.02 Jl.Seroja No.11 Landasan Ulin, Banjarbaru</div>
+            <div class="company-address">TWINCOM GROUP - Jl. Kampung Baru RT.03 RW.02 Jl.Seroja No.11 Landasan Ulin, Banjarbaru</div>
         </div>
         <div class="footer-right">
             Hal. <span class="page-number"></span>
@@ -352,6 +358,16 @@ tfoot tr {
                     </div>
                     <div class="warranty-info">Garansi: {{ $item['charField7'] ?? '-' }}</div>
                 </div>
+
+                <div class="price-box partner">
+                    <div class="price-label">Harga Twincom Partner</div>
+                    <div class="price-value price-partner">
+                        <h3 id="resellerPriceMain" class="price-partner">
+                            Rp {{ number_format($partnerPrice,0,',','.') }}
+                        </h3>
+                    </div>
+                    <div class="warranty-info">Garansi: {{ $item['charField7'] ?? '-' }}</div>
+                </div>
             </div>
         @elseif($priceType === 'user')
             <div class="price-section">
@@ -393,6 +409,18 @@ tfoot tr {
                                 Rp {{ number_format($prices['reseller'],0,',','.') }}
                             </h3>
                         @endif
+                    </div>
+                    <div class="warranty-info">Garansi: {{ $item['charField7'] ?? '-' }}</div>
+                </div>
+            </div>
+        @elseif ($priceType === 'partner')
+            <div class="price-section">
+                <div class="price-box partner">
+                    <div class="price-label">Harga</div>
+                    <div class="price-value price-partner">
+                        <h3 id="resellerPriceMain" class="price-partner">
+                            Rp {{ number_format($partnerPrice,0,',','.') }}
+                        </h3>
                     </div>
                     <div class="warranty-info">Garansi: {{ $item['charField7'] ?? '-' }}</div>
                 </div>

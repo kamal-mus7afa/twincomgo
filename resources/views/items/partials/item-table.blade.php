@@ -15,15 +15,17 @@
                     </thead>
                     <tbody>
                         @forelse ($items as $item)
-                            <tr onclick="window.location='{{ Auth::user()->status === 'RESELLER' 
-                                ? route('reseller.detail', ['encrypted' => Hashids::encode($item['id'])]) 
-                                : route('karyawan.show', ['encrypted' => Hashids::encode($item['id'])]) }}'" style="cursor: pointer;">
+                            <tr onclick="window.location='{{ 
+                                        Auth::user()->status === 'admin' 
+                                            ? route('admin.detail', ['encrypted' => Hashids::encode($item['id'])]) 
+                                            : (Auth::user()->status === 'RESELLER' 
+                                                ? route('reseller.detail', ['encrypted' => Hashids::encode($item['id'])]) 
+                                                : route('karyawan.show', ['encrypted' => Hashids::encode($item['id'])])
+                                            ) 
+                                    }}'" style="cursor: pointer;">
                                 <td class="text-center" style="padding: 12px;"><span>{{ $item['no'] ?? '-' }}</span></td>
                                 <td>
                                     <div class="fw-semibold">{{ $item['name'] }}</div>
-                                    @if(!empty($item['itemCategory']['name']))
-                                        <small class="text-muted">{{ $item['itemCategory']['name'] }}</small>
-                                    @endif
                                 </td>
                                 <td class="td-harga">
                                     <div class="harga-grid">
@@ -83,9 +85,6 @@
                     </div>
 
                     <div class="product-code text-muted small mt-1">{{ $item['no'] ?? '-' }}</div>
-                    @if(!empty($item['itemCategory']['name']))
-                        <div class="product-meta mt-1">{{ $item['itemCategory']['name'] }}</div>
-                    @endif
                     <div class="d-flex justify-content-between align-items-center mt-2">
                         <div class="product-meta">
                             Stok: <strong>{{ $item['availableToSell'] ?? 0 }}</strong> /

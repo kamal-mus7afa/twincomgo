@@ -1,5 +1,5 @@
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
 
     const itemId = "{{ $item['id'] }}";
     const session = "{{ $session }}";
@@ -161,6 +161,8 @@
             if (rows.length === 0) return resolve();
 
             rows.forEach(row => {
+                //Loading
+                row.classList.add('stock-loading')
                 const warehouseName = row.closest("tr").children[0].innerText.trim();
                 const branchName = document.querySelector("#branchSelect")?.value || '';
 
@@ -173,6 +175,7 @@
                         }
                     })
                     .finally(() => {
+                        row.classList.remove('stock-loading')
                         done++;
                         if (done === rows.length) resolve();
                     });
@@ -212,6 +215,7 @@
 
     const userBox = document.getElementById("userPriceBox");
     const resellerBox = document.getElementById("resellerPriceBox");
+    const partnerBox = document.getElementById("partnerPriceBox");
 
     function updatePriceView() {
         let mode = selector.value;
@@ -219,12 +223,19 @@
         if (mode === "all") {
             userBox.style.display = "block";
             resellerBox.style.display = "block";
+            partnerBox.style.display = "block";
         } else if (mode === "user") {
             userBox.style.display = "block";
             resellerBox.style.display = "none";
+            partnerBox.style.display = "none";
         } else if (mode === "reseller") {
             userBox.style.display = "none";
             resellerBox.style.display = "block";
+            partnerBox.style.display = "none";
+        } else if (mode === 'partner') {
+            userBox.style.display = "none";
+            resellerBox.style.display = "none";
+            partnerBox.style.display = "block";
         }
     }
 
@@ -235,6 +246,41 @@
     selector.addEventListener("change", updatePriceView);
 
 });
+
+function copyText(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showCopyNotif("Berhasil dicopy!");
+    }).catch(err => {
+        showCopyNotif("Gagal copy!", true);
+        console.error('Failed to copy', err);
+    });
+}
+
+function showCopyNotif(message, isError = false) {
+    const notif = document.createElement("div");
+    notif.innerText = message;
+
+    notif.style.position = "fixed";
+    notif.style.top = "20px";
+    notif.style.right = "20px";
+    notif.style.padding = "10px 16px";
+    notif.style.borderRadius = "8px";
+    notif.style.color = "#fff";
+    notif.style.fontSize = "14px";
+    notif.style.zIndex = "9999";
+    notif.style.backgroundColor = isError ? "#dc3545" : "#28a745";
+    notif.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
+    notif.style.opacity = "0";
+    notif.style.transition = "opacity 0.3s";
+
+    document.body.appendChild(notif);
+
+    setTimeout(() => notif.style.opacity = "1", 10);
+    setTimeout(() => {
+        notif.style.opacity = "0";
+        setTimeout(() => notif.remove(), 300);
+    }, 1500);
+}
 
 function changeImage(thumb, src) {
     // Update main image

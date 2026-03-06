@@ -1,4 +1,6 @@
-<form method="GET" class="mb-4 filter-card shadow compact" id="filter-form">
+<form method="GET" class="mb-4 compact @if (Auth::user()->status !== 'admin')
+    filter-card shadow
+@endif" id="filter-form">
     <div class="row g-2 justify-content-start">
 
         <!-- Stok Ready -->
@@ -71,7 +73,7 @@
             <button type="submit" class="btn btn-primary w-100 shadow-sm">
                 <i class="bi bi-search"></i>
             </button>
-            <a href="{{ route('items.index') }}" class="btn btn-secondary w-100 shadow-sm">
+            <a href="{{ Auth::user()->status === 'admin' ? route('admin.items') : route('items.index') }}" class="btn btn-secondary w-100 shadow-sm">
                 <i class="bi bi-arrow-counterclockwise"></i>
             </a>
         </div>

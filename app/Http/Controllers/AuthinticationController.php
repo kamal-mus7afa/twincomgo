@@ -51,6 +51,12 @@ class AuthinticationController extends Controller
                     ->inLog($user->name)
                     ->log('Karyawan dengan email ' . $user->email . ' sedang melakukan login');
                 return redirect()->route('queue.number');
+            } elseif ($user->status === 'USER') {
+                activity()
+                    ->causedBy($user)
+                    ->inLog($user->name)
+                    ->log('Customer dengan email ' . $user->email . ' sedang melakukan login');
+                return redirect()->route('queue.number');
             }
 
             return redirect()->route('auth.login');

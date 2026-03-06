@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
 use App\Helpers\AccurateGlobal;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Vinkla\Hashids\Facades\Hashids;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use Vinkla\Hashids\Facades\Hashids;
 
 class KaryawanController extends Controller
 {
@@ -68,7 +69,12 @@ class KaryawanController extends Controller
         $id = $decoded[0] ?? null;
         if (!$id) abort(404, 'ID item tidak valid.');
 
-        $acc = AccurateGlobal::token();
+        $status = strtoupper(trim(Auth::user()->status ?? ''));
+
+            $label = in_array($status, ['GLOBAL', 'RESELLER'])
+                ? $status
+                : 'GLOBAL';
+        $acc     = AccurateGlobal::token($label);
         $token   = $acc['access_token'];
         $session = $acc['session_id'];
         $branchName = $request->input('branchName');
@@ -312,11 +318,19 @@ class KaryawanController extends Controller
         $warehousesPanda      = $warehousesPanda->filter(fn($w) => ($w['balance'] ?? 0) > 0)->values();
         $warehousesTransit    = $warehousesTransit->filter(fn($w) => ($w['balance'] ?? 0) > 0)->values();
 
+        $userBasePrice = $this->getPriceByUnitId($userData, $unitId);
+        $resellerBasePrice = $this->getPriceByUnitId($resellerData, $unitId);
+
+        $partnerPrice = $userBasePrice - (($userBasePrice - $resellerBasePrice) / 2);
+
+        // dd(number_format($partnerPrice, 0, ',', '.'));
+
         return view('items.karyawan.detail', [
             'item'          => $item,
             'images'        => $fileName,
             'session'       => $session,
             'branchName'    => $branchName,
+            'partnerPrice'  => $partnerPrice,
             'prices' => [
                 'user'     => $userPrice,
                 'reseller' => $resellerPrice,
@@ -347,7 +361,12 @@ class KaryawanController extends Controller
         $url = "https://public.accurate.id{$file}?session={$session}";
 
         // Token & Session
-        $acc = AccurateGlobal::token();
+        $status = strtoupper(trim(Auth::user()->status ?? ''));
+
+            $label = in_array($status, ['GLOBAL', 'RESELLER'])
+                ? $status
+                : 'GLOBAL';
+        $acc     = AccurateGlobal::token($label);
         $token = $acc['access_token'];
         $accurateSession = $acc['session_id'];
 
@@ -367,17 +386,22 @@ class KaryawanController extends Controller
     }
 
 
-public function getPrice(Request $request, $id)
-{
-    $branchName = $request->input('branchName');
+    public function getPrice(Request $request, $id)
+    {
+        $branchName = $request->input('branchName');
 
-    $acc = AccurateGlobal::token();
-    $token = $acc['access_token'];
-    $session = $acc['session_id'];
+        $status = strtoupper(trim(Auth::user()->status ?? ''));
 
-    $baseUrl = 'https://public.accurate.id/accurate/api';
+        $label = in_array($status, ['GLOBAL', 'RESELLER'])
+            ? $status
+            : 'GLOBAL';
+        $acc     = AccurateGlobal::token($label);
+        $token = $acc['access_token'];
+        $session = $acc['session_id'];
 
-     /** ---------------------------------------------
+        $baseUrl = 'https://public.accurate.id/accurate/api';
+
+        /** ---------------------------------------------
          * 1. DETAIL ITEM
          * --------------------------------------------- */
         $detailResp = Http::withHeaders([
@@ -397,103 +421,109 @@ public function getPrice(Request $request, $id)
         // =============================
         $firstWH = $item['detailWarehouseData'][0] ?? null;
 
-    $unitId = 50; // default PCS
+        $unitId = 50; // default PCS
 
-    if ($firstWH) {
-        // contoh "6 PCS"
-        $rawUnit = explode(' ', $firstWH['balanceUnit'] ?? '');
-        $unitName = strtoupper($rawUnit[1] ?? 'PCS');
+        if ($firstWH) {
+            // contoh "6 PCS"
+            $rawUnit = explode(' ', $firstWH['balanceUnit'] ?? '');
+            $unitName = strtoupper($rawUnit[1] ?? 'PCS');
 
-        if (isset($this->unitMap[$unitName])) {
-            $unitId = $this->unitMap[$unitName];
+            if (isset($this->unitMap[$unitName])) {
+                $unitId = $this->unitMap[$unitName];
+            }
         }
-    }
 
-    // =============================
-    // 2. HARGA USER
-    // =============================
-    $defaultResp = Http::withHeaders([
-        'Authorization' => 'Bearer ' . $token,
-        'X-Session-ID'  => $session,
-    ])->get("{$baseUrl}/item/get-selling-price.do", [
-        'id'         => $id,
-        'branchName' => $branchName,
-    ]);
+        // =============================
+        // 2. HARGA USER
+        // =============================
+        $defaultResp = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $token,
+            'X-Session-ID'  => $session,
+        ])->get("{$baseUrl}/item/get-selling-price.do", [
+            'id'         => $id,
+            'branchName' => $branchName,
+        ]);
 
-    $userData = $defaultResp['d'] ?? [];
-    $userPrice = $this->getPriceByUnitId($userData, $unitId);
+        $userData = $defaultResp['d'] ?? [];
+        $userPrice = $this->getPriceByUnitId($userData, $unitId);
 
-    if (isset($userData['discountRule'][0]['discount'])) {
-        $disc = floatval($userData['discountRule'][0]['discount']);
-        $userPrice -= ($userPrice * $disc / 100);
-    }
-
-    // =============================
-    // 3. HARGA RESELLER
-    // =============================
-    $resellerResp = Http::withHeaders([
-        'Authorization' => 'Bearer ' . $token,
-        'X-Session-ID'  => $session,
-    ])->get("{$baseUrl}/item/get-selling-price.do", [
-        'id'                  => $id,
-        'branchName'          => $branchName,
-        'priceCategoryName'   => 'RESELLER',
-        'discountCategoryName'=> 'RESELLER',
-    ]);
-
-    $resellerData = $resellerResp['d'] ?? [];
-    $resellerPrice = $this->getPriceByUnitId($resellerData, $unitId);
-
-    if (isset($resellerData['discountRule'][0]['discount'])) {
-        $disc = floatval($resellerData['discountRule'][0]['discount']);
-        $resellerPrice -= ($resellerPrice * $disc / 100);
-    }
-
-    // =============================
-    // 4. KUMPULKAN SEMUA HARGA PER UNIT/PACK
-    // =============================
-    $unitPrices = [];
-
-    if (isset($userData['unitPriceRule'])) {
-        foreach ($userData['unitPriceRule'] as $r) {
-            $uid  = $r['unitId'];
-            $price = $r['price'];
-
-            $unitName = array_search($uid, $this->unitMap, true) ?? $uid;
-            $unitPrices[$unitName]['user'] = $price;
-        }
-    }
-
-    if (isset($resellerData['unitPriceRule'])) {
-        foreach ($resellerData['unitPriceRule'] as $r) {
-            $uid  = $r['unitId'];
-            $price = $r['price'];
-
-            $unitName = array_search($uid, $this->unitMap, true) ?? $uid;
-            $unitPrices[$unitName]['reseller'] = $price;
-        }
-    }
-
-    // apply discount per unit
-    foreach ($unitPrices as $unit => &$p) {
-        if (isset($userData['discountRule'][0]['discount']) && isset($p['user'])) {
+        if (isset($userData['discountRule'][0]['discount'])) {
             $disc = floatval($userData['discountRule'][0]['discount']);
-            $p['user'] -= ($p['user'] * $disc / 100);
+            $userPrice -= ($userPrice * $disc / 100);
         }
-        if (isset($resellerData['discountRule'][0]['discount']) && isset($p['reseller'])) {
-            $disc = floatval($resellerData['discountRule'][0]['discount']);
-            $p['reseller'] -= ($p['reseller'] * $disc / 100);
-        }
-    }
 
-    return response()->json([
-        'user'             => $userPrice,
-        'reseller'         => $resellerPrice,
-        'unitPrices'       => $unitPrices,
-        'hasMultiUnit'     => count($unitPrices) > 1,
-        'unitIdUsed'       => $unitId,
-    ]);
-}
+        // =============================
+        // 3. HARGA RESELLER
+        // =============================
+        $resellerResp = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $token,
+            'X-Session-ID'  => $session,
+        ])->get("{$baseUrl}/item/get-selling-price.do", [
+            'id'                  => $id,
+            'branchName'          => $branchName,
+            'priceCategoryName'   => 'RESELLER',
+            'discountCategoryName'=> 'RESELLER',
+        ]);
+
+        $resellerData = $resellerResp['d'] ?? [];
+        $resellerPrice = $this->getPriceByUnitId($resellerData, $unitId);
+
+        if (isset($resellerData['discountRule'][0]['discount'])) {
+            $disc = floatval($resellerData['discountRule'][0]['discount']);
+            $resellerPrice -= ($resellerPrice * $disc / 100);
+        }
+
+        // =============================
+        // 4. KUMPULKAN SEMUA HARGA PER UNIT/PACK
+        // =============================
+        $unitPrices = [];
+
+        if (isset($userData['unitPriceRule'])) {
+            foreach ($userData['unitPriceRule'] as $r) {
+                $uid  = $r['unitId'];
+                $price = $r['price'];
+
+                $unitName = array_search($uid, $this->unitMap, true) ?? $uid;
+                $unitPrices[$unitName]['user'] = $price;
+            }
+        }
+
+        if (isset($resellerData['unitPriceRule'])) {
+            foreach ($resellerData['unitPriceRule'] as $r) {
+                $uid  = $r['unitId'];
+                $price = $r['price'];
+
+                $unitName = array_search($uid, $this->unitMap, true) ?? $uid;
+                $unitPrices[$unitName]['reseller'] = $price;
+            }
+        }
+
+        // apply discount per unit
+        foreach ($unitPrices as $unit => &$p) {
+            if (isset($userData['discountRule'][0]['discount']) && isset($p['user'])) {
+                $disc = floatval($userData['discountRule'][0]['discount']);
+                $p['user'] -= ($p['user'] * $disc / 100);
+            }
+            if (isset($resellerData['discountRule'][0]['discount']) && isset($p['reseller'])) {
+                $disc = floatval($resellerData['discountRule'][0]['discount']);
+                $p['reseller'] -= ($p['reseller'] * $disc / 100);
+            }
+        }
+
+        $userBasePrice = $this->getPriceByUnitId($userData, $unitId);
+        $resellerBasePrice = $this->getPriceByUnitId($resellerData, $unitId);
+
+        $partnerPrice = $userBasePrice - (($userBasePrice - $resellerBasePrice) / 2);
+
+        return response()->json([
+            'user'             => $userPrice,
+            'reseller'         => $resellerPrice,
+            'partnerPrice'     => $partnerPrice,
+            'unitPrices'       => $unitPrices,
+            'hasMultiUnit'     => count($unitPrices) > 1,
+            'unitIdUsed'       => $unitId,
+        ]);
+    }
 
 
     /**
@@ -507,7 +537,12 @@ public function getPrice(Request $request, $id)
         $warehouse = $request->warehouse;
         $branch    = $request->branchName;
 
-        $acc     = AccurateGlobal::token();
+        $status = strtoupper(trim(Auth::user()->status ?? ''));
+
+            $label = in_array($status, ['GLOBAL', 'RESELLER'])
+                ? $status
+                : 'GLOBAL';
+        $acc     = AccurateGlobal::token($label);
         $token   = $acc['access_token'];
         $session = $acc['session_id'];
 
@@ -520,8 +555,25 @@ public function getPrice(Request $request, $id)
             'branchName'    => $branch,
         ]);
 
+        if (!$resp->successful()) {
+            Log::info("API Accurate gagal");
+            return response()->json([
+                'error' => true,
+                'message' => 'API Accurate gagal'
+            ], 500);
+        }
+
+        $data = $resp->json();
+
+        if (!isset($data['d']['availableStock'])) {
+            Log::info("Error");
+            return response()->json([
+                'error' => true,
+            ], 500);
+        }
+
         return [
-            'stock' => $resp->json()['d']['availableStock'] ?? 0
+            'stock' => $data['d']['availableStock']
         ];
     }
 
@@ -535,7 +587,12 @@ public function getPrice(Request $request, $id)
         // Cache selama 1 jam
         $cached = Cache::remember($cacheKey, 3600, function () use ($page) {
 
-            $acc = AccurateGlobal::token();
+            $status = strtoupper(trim(Auth::user()->status ?? ''));
+
+            $label = in_array($status, ['GLOBAL', 'RESELLER'])
+                ? $status
+                : 'GLOBAL';
+            $acc     = AccurateGlobal::token($label);
             $token = $acc['access_token'];
             $session = $acc['session_id'];
 
@@ -609,7 +666,12 @@ public function getPrice(Request $request, $id)
         // =============================
         // 2. Ambil Token Accurate
         // =============================
-        $acc = AccurateGlobal::token();
+        $status = strtoupper(trim(Auth::user()->status ?? ''));
+
+            $label = in_array($status, ['GLOBAL', 'RESELLER'])
+                ? $status
+                : 'GLOBAL';
+        $acc     = AccurateGlobal::token($label);
         $token = $acc['access_token'];
         $session = $acc['session_id'];
 
@@ -847,12 +909,18 @@ public function getPrice(Request $request, $id)
             }
         }
 
+        $userBasePrice = $this->getPriceByUnitId($userData, $unitId);
+        $resellerBasePrice = $this->getPriceByUnitId($resellerData, $unitId);
+
+        $partnerPrice = $userBasePrice - (($userBasePrice - $resellerBasePrice) / 2);
+
         // =============================
         // 9. GENERATE PDF
         // =============================
         $pdf = Pdf::loadView('items.karyawan.pdf', [
             'item'       => $item,
             'images'     => $imagesBase64,
+            'partnerPrice' => $partnerPrice,
             'prices' => [
                 'user'     => $userPrice,
                 'reseller' => $resellerPrice,
@@ -872,7 +940,12 @@ public function getPrice(Request $request, $id)
 
     private function getRealtimeStock($itemId, $warehouseName, $branchName)
     {
-        $acc = AccurateGlobal::token();
+        $status = strtoupper(trim(Auth::user()->status ?? ''));
+
+            $label = in_array($status, ['GLOBAL', 'RESELLER'])
+                ? $status
+                : 'GLOBAL';
+        $acc     = AccurateGlobal::token($label);
         $token = $acc['access_token'];
         $session = $acc['session_id'];
 

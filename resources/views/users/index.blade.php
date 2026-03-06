@@ -8,53 +8,53 @@
 
 @section('content')
 <div class="px-4 py-4">
-    @include('items.partials.filter')
+    <div class="row g-4">
 
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <h4 class="fw-bold text-white text-shadow-sm mb-2 mb-md-0">
-            <i class="bi bi-box-seam me-2"></i> Daftar Produk
-        </h4>
+        {{-- KIRI: FILTER --}}
+        <div class="col-12 col-md-3 col-lg-2">
+            @include('users.partials.filter')
+        </div>
 
-        <div class="d-flex gap-2">
-            {{-- Tambahan tombol lain bisa di sini kalau mau (misal export Excel) --}}
-            <div class="d-flex align-items-center">
-                <p class="mb-0 text-white">item perpage : </p>
+        {{-- KANAN: LIST ITEM --}}
+        <div class="col-12 col-md-9 col-lg-10">
+
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <h4 class="fw-bold text-white text-shadow-sm mb-2 mb-md-0">
+                    <i class="bi bi-box-seam me-2"></i> Daftar Produk
+                </h4>
             </div>
-            <select id="per_page" class="form-select form-select-sm" style="width: 80px;">
-                <option value="10" selected>10</option>
-                <option value="20">20</option>
-                <option value="50">50</option>
-            </select>
-            <a href="#" id="btn-export-pdf" class="btn btn-danger shadow-sm" data-export-url="{{ route('items.exportPdf') }}">
-                <i class="bi bi-filetype-pdf me-1"></i> Preview PDF
-            </a>
+
+            {{-- LIST ITEM --}}
+            <div id="item-container">
+                @include('users.partials.item-table', ['items' => $items])
+            </div>
+
+            {{-- PAGINATION --}}
+            <div id="pagination-container" class="mt-3 d-flex justify-content-center">
+                @include('users.partials.pagination', [
+                    'page' => $page,
+                    'pageCount' => $pageCount,
+                    'queryParams' => request()->except('page')
+                ])
+            </div>
+
         </div>
     </div>
-
-    <!-- 🔹 Kontainer hasil produk -->
-    <div id="item-container">
-        @include('items.partials.item-table', ['items' => $items])
-    </div>
-
-    <!-- 🔹 Kontainer pagination -->
-    <div id="pagination-container" class="mt-3 d-flex justify-content-center">
-        @include('items.partials.pagination', [
-            'page' => $page,
-            'pageCount' => $pageCount,
-            'queryParams' => request()->except('page')
-        ])
-    </div>
 </div>
+
+{{-- TOAST --}}
 <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 2000">
-    <div id="toastFilterError" class="toast align-items-center text-bg-warning border-0" role="alert">
+    <div id="toastFilterError" class="toast align-items-center text-bg-warning border-0">
         <div class="d-flex">
             <div class="toast-body fw-semibold">
                 Filter harga terlalu sempit.<br>Perbesar rentang harganya.
             </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                    data-bs-dismiss="toast"></button>
         </div>
     </div>
 </div>
+
 @endsection
 
 @push('scripts')
@@ -275,7 +275,7 @@ document.addEventListener("DOMContentLoaded", function () {
             params.set("force", "1");
         }
 
-        return "{{ route('items.index') }}?" + params.toString();
+        return "{{ route('katalog.items') }}?" + params.toString();
     }
 
     function submitFilterAjax() {
@@ -447,3 +447,4 @@ function showFilterToast() {
 </script>
 
 @endpush
+

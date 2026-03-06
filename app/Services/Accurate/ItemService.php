@@ -2,64 +2,140 @@
 
 namespace App\Services\Accurate;
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Cache;
+use Hashids\Hashids;
+use Illuminate\Http\Request;
 
 class ItemService
 {
-    private string $baseUrl;
-    private string $token;
-    private string $session;
-
-    public function __construct($token, $session)
+    public function fetchItemsForList(Request $request): array
     {
-        $this->baseUrl = rtrim(config('services.accurate.base_api'), '/');
-        $this->token   = $token;
-        $this->session = $session;
-    }
+        $baseUrl = rtrim(config('services.accurate.base_api'), '/');
 
-    private function client()
-    {
-        return Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->token,
-            'X-Session-ID'  => $this->session,
-        ])->retry(3, 200);
-    }
+        $perPage = $request->query('per_page', 10);
+        $pageWeb = max(1, (int) $request->query('page', 1));
+        $offset  = ($pageWeb - 1) * $perPage;
 
-    public function listItems(array $params)
-    {
-        $response = $this->client()->get("{$this->baseUrl}/item/list.do", $params);
-        return $response->json();
-    }
+        $search     = trim($request->query('search', ''));
+        $categoryId = $request->query('category_id');
+        $stokAda    = $request->query('stok_ada', '1');
+        $priceMode  = $request->query('price_mode', 'default');
 
-    public function getPrice($itemId, $priceCategory = 'USER')
-    {
-        return Cache::remember("accurate:price:{$itemId}:{$priceCategory}", 600, function () use ($itemId, $priceCategory) {
-            $resp = $this->client()->get("{$this->baseUrl}/item/get-selling-price.do", [
-                'id' => $itemId,
-                'priceCategoryName' => $priceCategory,
-            ]);
-            $data = $resp->json()['d'] ?? [];
-            return $data['unitPrice'] ?? ($data['unitPriceRule'][0]['price'] ?? 0);
+        $minPrice = $request->filled('min_price')
+            ? floatval(str_replace(['.', ','], ['', '.'], $request->input('min_price')))
+            : null;
+
+        $maxPrice = $request->filled('max_price')
+            ? floatval(str_replace(['.', ','], ['', '.'], $request->input('max_price')))
+            : null;
+
+        $usePriceFilter = ($minPrice !== null || $maxPrice !== null);
+        $priceCategory  = $priceMode === 'reseller' ? 'RESELLER' : 'USER';
+
+        $targetBase = $offset + $perPage + 1;
+        $targetDeep = $perPage;
+        $maxLimit   = 1000;
+
+        $buffer     = collect();
+        $rawScanned = 0;
+        $pageAcc    = 1;
+        $rowsNeeded = $targetBase;
+
+        $priceService = app(PriceService::class);
+        $allowedCategoryIds = app(CategoryService::class)
+        ->all()
+        ->pluck('id')
+        ->flip(); // buat lookup cepat
+
+        $processRow = function ($row) use (
+            &$buffer,
+            $stokAda,
+            $usePriceFilter,
+            $minPrice,
+            $maxPrice,
+            $priceCategory,
+            $priceService,
+            $allowedCategoryIds
+        ) {
+            $itemCategoryId = $row['itemCategory']['id'] ?? null;
+
+            if (!$itemCategoryId || !isset($allowedCategoryIds[$itemCategoryId])) {
+                return false;
+            }
+
+            if ($stokAda === '1' && ($row['availableToSell'] ?? 0) <= 0) {
+                return;
+            }
+
+            if ($usePriceFilter) {
+                $price = $priceService->get($row['id'], $priceCategory);
+
+                if ($minPrice !== null && $price < $minPrice) return;
+                if ($maxPrice !== null && $price > $maxPrice) return;
+
+                $row['price'] = $price;
+            }
+
+            $buffer->push($row);
+        };
+
+        while ($buffer->count() < $rowsNeeded && $rawScanned < $maxLimit) {
+
+            $query = [
+                'sp.page'         => $pageAcc,
+                'sp.pageSize'     => 100,
+                'fields'          => 'id,name,no,availableToSell,itemCategory.name,availableToSellInAllUnit,itemCategory',
+                'filter.suspended'=> false,
+            ];
+
+            if ($search !== '') {
+                $query['filter.keywords.op']     = 'CONTAIN';
+                $query['filter.keywords.val[0]'] = $search;
+            }
+
+            if (!empty($categoryId)) {
+                $query['filter.itemCategoryId.op'] = 'EQUAL';
+                foreach ($categoryId as $i => $id) {
+                    $query["filter.itemCategoryId.val[$i]"] = $id;
+                }
+            }
+
+            $resp = AccurateHttp::get("$baseUrl/item/list.do", $query);
+            if (!$resp->successful()) break;
+
+            $json = $resp->json();
+            $rows = collect($json['d'] ?? []);
+            $sp   = $json['sp'] ?? [];
+
+            $rawScanned += $rows->count();
+            if ($rows->isEmpty()) break;
+
+            foreach ($rows as $row) {
+                $processRow($row);
+                if ($buffer->count() >= $rowsNeeded) break;
+            }
+
+            if (($json['sp']['pageCount'] ?? 0) <= $pageAcc) break;
+            $pageAcc++;
+        }
+
+        $totalFiltered = $buffer->count();
+        $items         = $buffer->slice($offset, $perPage)->values();
+        $hasMore       = $totalFiltered > ($offset + $items->count());
+
+        $items = $items->map(function ($item) {
+
+            $item['category_id'] = $item['itemCategory']['id'] ?? null;
+
+            return $item;
         });
-    }
 
-    public function getCategories()
-    {
-        return Cache::remember('accurate:categories:global', 1800, function () {
-            $cats = collect();
-            $page = 1;
-            do {
-                $resp = $this->client()->get("{$this->baseUrl}/item-category/list.do", [
-                    'sp.page' => $page,
-                    'sp.pageSize' => 100,
-                    'fields' => 'id,name,parent',
-                ]);
-                $json = $resp->json();
-                $cats = $cats->merge($json['d'] ?? []);
-                $page++;
-            } while (($json['sp']['pageCount'] ?? 1) >= $page);
-            return $cats->values();
-        });
+        return [
+            'rows'       => $sp ?? [],
+            'items'      => $items,
+            'page'       => $pageWeb,
+            'pageCount'  => $hasMore ? $pageWeb + 1 : $pageWeb,
+            'totalItems' => $totalFiltered,
+            'filters'    => compact('search', 'categoryId', 'stokAda', 'minPrice', 'maxPrice', 'priceMode'),
+        ];
     }
 }

@@ -390,7 +390,7 @@
                         <h4 class="fw-bold text-primary mb-2 mb-md-0 me-3">{{ $item['name'] }}</h4>
                     </div>
                     <div class="col-md-2 text-md-end text-center">
-                        <span class="badge bg-secondary bg-opacity-25 text-dark px-3 py-2 rounded-3 fs-6">
+                        <span class="badge bg-secondary bg-opacity-25 text-dark px-3 py-2 rounded-3 fs-5">
                             <i class="bi bi-upc-scan me-1"></i> {{ $item['no'] ?? '-' }}
                         </span>
                     </div>
@@ -408,7 +408,8 @@
                                     {{ strtoupper($unitName) }}
                                 </div>
                                 <div class="text-end">
-                                    @if(isset($p['user']) && $p['user'] > 0)
+                                    {{dd($catId)}}
+                                    @if(isset($p['user']) && $p['user'] > 0 && !in_array((int) $catId, [52706, 52850, 52800]))
                                         <div class="text-muted" style="text-decoration: line-through;">
                                             Rp {{ number_format($p['user'], 0, ',', '.') }}
                                         </div>
@@ -426,7 +427,7 @@
                     @else
                         {{-- 🔹 TIDAK ADA / CUMA 1 UNITPRICE → PAKAI HARGA UTAMA --}}
                         <div class="d-flex flex-wrap align-items-baseline mb-3">
-                            @if(isset($prices['user']) && $prices['user'] > 0)
+                            @if(isset($prices['user']) && $prices['user'] > 0 && !in_array((int) $catId, [52706, 52850, 52800]))
                                 <span class="text-user d-inline-block me-2">
                                     Rp {{ number_format($prices['user'], 0, ',', '.') }}
                                 </span>
@@ -466,10 +467,7 @@
     {{-- 🏬 GUDANG --}}
     @foreach([
         'store' => 'Store',
-        'tsc' => 'TSC',
-        'reseller' => 'Reseller',
-        'konsinyasi' => 'Konsinyasi',
-        'panda' => 'Panda'
+        'user' => 'Konsinyasi'
     ] as $key => $label)
         @php
             $var = 'warehouses' . ucfirst($key);
@@ -514,7 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
     7. UPDATE TOTAL
     ============================================================ */
     function updateTotals() {
-        const groups = ["store", "tsc", "reseller", "konsinyasi", "panda"]; // ← HAPUS TITIK DI SINI
+        const groups = ["store", "tsc", "reseller", "konsinyasi", "panda", 'user']; // ← HAPUS TITIK DI SINI
 
         groups.forEach(group => {
             let total = 0;

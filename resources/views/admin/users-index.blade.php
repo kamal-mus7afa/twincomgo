@@ -23,17 +23,6 @@
         </div>
     </div>
 
-    {{-- ALERTS --}}
-    @if(session('ok'))
-        <div class="alert alert-success alert-dismissible fade show animate-card" style="animation-delay: 0.2s" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="bi bi-check-circle-fill me-2 fs-5"></i>
-                <div class="flex-grow-1">{{ session('ok') }}</div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        </div>
-    @endif
-
     @if(session('err'))
         <div class="alert alert-danger alert-dismissible fade show animate-card" style="animation-delay: 0.2s" role="alert">
             <div class="d-flex align-items-center">
@@ -93,6 +82,7 @@
                         <option value="karyawan" {{ request('status') == 'karyawan' ? 'selected' : '' }}>Karyawan</option>
                         <option value="reseller" {{ request('status') == 'reseller' ? 'selected' : '' }}>Reseller</option>
                         <option value="admin" {{ request('status') == 'admin' ? 'selected' : '' }}>Admin</option>
+                        <option value="user" {{ request('status') == 'user' ? 'selected' : '' }}>User</option>
                     </select>
                 </div>
 
@@ -228,6 +218,19 @@
     </div>
 
 </div>
+@push('script')
+@if(session('ok'))
+    <script>
+        Toastify({
+            text: "{{ session('ok') }}",
+            duration: 5000,
+            gravity: "top", // top or bottom
+            position: "center", // left, center or right
+            backgroundColor: "#ff0000", // warna hijau sukses
+            stopOnFocus: true, 
+        }).showToast();
+    </script>
+@endif
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -251,6 +254,7 @@
         });
     });
 </script>
+@endpush
 
 <style>
     .user-avatar-sm {

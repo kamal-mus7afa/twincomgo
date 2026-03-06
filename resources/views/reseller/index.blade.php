@@ -84,15 +84,14 @@
             <!-- 🔸 Kategori -->
             <div class="col-12 col-md-3 col-lg-2">
                 <label for="category" class="form-label mb-1">Pilih kategori</label>
-                <select name="category_id" id="category_search" class="form-select shadow-sm">
-                    <option value="">Semua Kategori</option>
+                <select name="category_id[]" id="category_search" class="form-select shadow-sm" multiple>
                     @foreach($categories as $cat)
-                        <option value="{{ $cat['id'] }}" {{ request('category_id') == $cat['id'] ? 'selected' : '' }}>
+                        <option value="{{ $cat['id'] }}"
+                            {{ collect(request('category_id'))->contains($cat['id']) ? 'selected' : '' }}>
                             {{ $cat['name'] }}
                         </option>
                     @endforeach
                 </select>
-                <input type="hidden" name="category_id" id="itemCategoryId" value="{{ request('category_id') }}">
             </div>
 
             <!-- 🔸 Pencarian -->
@@ -164,7 +163,6 @@ document.addEventListener("DOMContentLoaded", function () {
             plugins: ["remove_button"],
             searchField: "text",
             maxOptions: 9999,
-            placeholder: "Semua kategori",
             allowEmptyOption: false,
             onChange(value) {
                 // update hidden input + submit filter pakai AJAX

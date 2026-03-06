@@ -14,13 +14,20 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthinticationController;
 use App\Http\Controllers\AccurateAccountController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ListController;
 
 
-
+Route::get('/test500', function () {
+    abort(419);
+});
 
 Route::get('/', function () {
     return redirect('/login'); 
 });
+Route::get('/item/image', [ItemController::class, 'getItemImage'])->name('items.image');
+Route::get('/homepage', [CustomerController::class, 'homePage'])->name('home.page');
+
 // =================================================================================================================================
 //                                                       ROUTE LOGIN 
 // =================================================================================================================================
@@ -63,25 +70,27 @@ Route::get('/', function () {
     Route::middleware(['auth', 'karyawan', 'product.limit'])->group(function () {
         Route::get('/item',             [ItemController::class, 'index'])->name('items.index');
         Route::get('/item/{encrypted}', [KaryawanController::class, 'show'])->name('karyawan.show');
-    });
+        });
 
     Route::get('/proxy/image',                      [KaryawanController::class, 'proxyImage'])->name('proxy.image');
     Route::get('/karyawan/{encrypted}/export-pdf',  [KaryawanController::class, 'exportPdf'])->name('karyawan.exportPdf');
     Route::get('/karyawan/{id}/price',              [KaryawanController::class, 'getPrice']);
     Route::get('/branches',                         [KaryawanController::class, 'getBranches']);
     Route::get('/items/export-pdf',                 [ItemController::class, 'exportPdf1'])->name('items.exportPdf');
-
+    
     // AJAX-KARYAWAN
     Route::get('/ajax/warehouse-stock',             [KaryawanController::class, 'getWarehouseStock'])->name('ajax.warehouse.stock');
     Route::get('/ajax/item-image',                  [KaryawanController::class, 'getItemImage'])->name('ajax.item.image');
     Route::get('/ajax/price',                       [ItemController::class, 'ajaxPrice'])->name('ajax.price');
+    // =================================================================================================================================
+    
+    
+    // =================================================================================================================================
+    //                                                        ROUTE ADMIN
 // =================================================================================================================================
-
-
-// =================================================================================================================================
-//                                                        ROUTE ADMIN
-// =================================================================================================================================
-    Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'admin'])->group(function () {
+        Route::get('/admin/detail/{encrypted}',      [AdminController::class, 'showItems'])->name('admin.detail');
+        Route::get('/admin/item',            [AdminController::class, 'indexItems'])->name('admin.items');
         Route::get('/admin-dashboard',       [AdminController::class, 'index'])->name('admin.index');
         Route::get('/admin-user',            [AdminController::class, 'viewUser'])->name('admin.user');
         Route::get('/admin-log',             [AdminController::class, 'logActivity'])->name('admin.log');    
@@ -108,6 +117,10 @@ Route::get('/', function () {
         Route::get('/users/{id}',   [AdminController::class, 'show'])->name('users.show');
     });
 // =================================================================================================================================
+
+Route::middleware('auth')->group(function () {
+    Route::get('/katalog', [CustomerController::class, 'index'])->name('katalog.items');
+});
 
 
 // =================================================================================================================================
@@ -153,6 +166,9 @@ Route::get('/', function () {
         if (Auth::user()->status === 'RESELLER') {
             return redirect()->intended('/reseller');
         }
+        if (Auth::user()->status === 'USER') {
+            return redirect()->intended('/katalog');
+        }
     })->name('wait.continue');
 // =================================================================================================================================
 
@@ -167,4 +183,13 @@ Route::post('/verify-otp', [ResetPasswordController::class, 'verifyOtp']);
 
 Route::get('/reset-password', [ResetPasswordController::class, 'showResetForm']);
 Route::post('/reset-password', [ResetPasswordController::class, 'resetPassword']);
+
+
+Route::get('/list', [ListController::class, 'index']);
+Route::get('/list/search', [ListController::class, 'search']);
+Route::post('/list/add', [ListController::class, 'add']);
+Route::post('/list/clear', [ListController::class, 'clear']);
+Route::post('/list/remove', [ListController::class, 'remove']);
+Route::get('/list/pdf', [ListController::class, 'pdf']);
+
 

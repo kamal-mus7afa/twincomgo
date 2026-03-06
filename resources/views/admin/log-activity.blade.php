@@ -417,7 +417,22 @@
         .table thead th,
         .table tbody td {
             padding: 12px 8px;
-            font-size: 0.8rem;
+            font-size: 0.6rem;
+        }
+        .badge-karyawan {
+            border: none;
+            background: none;
+            font-size: 0.6rem;
+        }
+        .badge-admin {
+            border: none;
+            background: none;
+            font-size: 0.6rem;
+        }
+        .badge-reseller {
+            border: none;
+            background: none;
+            font-size: 0.6rem;
         }
     }
 </style>
@@ -450,7 +465,10 @@
             <div class="stat-label">Today</div>
         </div>
         <div class="stat-item">
-            <div class="stat-number">{{ $activities->unique('log_name')->count() }}</div>
+            <div class="stat-number">{{ $activities->where('created_at', '>=', now()->startOfDay())
+                                                            ->whereNotNull('causer_id')
+                                                            ->unique('causer_id')
+                                                            ->count(); }}</div>
             <div class="stat-label">Active Users</div>
         </div>
         <div class="stat-item">
@@ -554,9 +572,8 @@
                         <tr>
                             <th width="60">#</th>
                             <th>User</th>
-                            <th>Activity</th>
-                            <th width="120">Status</th>
-                            <th width="120">Date</th>
+                            <th width="250" class="text-center">Status</th>
+                            <th width="250" class="text-center">Date</th>
                             <th width="100">Login</th>
                             <th width="100">Logout</th>
                         </tr>
@@ -570,9 +587,6 @@
                                 </td>
                                 <td>
                                     <div class="d-flex align-items-center gap-3">
-                                        <div class="user-avatar-sm">
-                                            {{ strtoupper(substr($activity->log_name ?? 'U', 0, 1)) }}
-                                        </div>
                                         <div>
                                             <div class="fw-bold text-dark">{{ $activity->log_name ?? 'System' }}</div>
                                             @if(now()->diffInMinutes($activity->created_at) <= 60)
@@ -580,9 +594,6 @@
                                             @endif
                                         </div>
                                     </div>
-                                </td>
-                                <td>
-                                    <div class="activity-text">{{ $activity->description }}</div>
                                 </td>
                                 <td class="text-center">
                                     @php $status = strtolower(optional($activity->causer)->status ?? 'other'); @endphp

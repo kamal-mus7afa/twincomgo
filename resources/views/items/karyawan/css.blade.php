@@ -81,6 +81,7 @@
 }
 .price-user { font-size: 1.7rem; color:#198754; font-weight:700; }
 .price-reseller { font-size: 1.7rem; color:#0d6efd; font-weight:700; }
+.price-partner { font-size: 1.7rem; color:#250dfd; font-weight:700; }
 
 /* Warehouse Dashboard Styles */
 .warehouse-section {
@@ -315,6 +316,12 @@
     align-items: center;
 }
 
+.price-box .title-partner {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #250dfd;
+}
+
 .price-box .title i {
     font-size: 1.1rem;
 }
@@ -333,6 +340,10 @@
 
 .price-reseller {
     color: #007bff;
+}
+
+.price-partner {
+    color: #250dfd;
 }
 
 .price-box hr {
@@ -357,6 +368,10 @@
 
 .col-md-6:last-child .price-box::before {
     background: linear-gradient(to bottom, #007bff, #6f42c1);
+}
+
+.col-md-6:last-child .price-box::before {
+    background: linear-gradient(to bottom, #250dfd, #9d42c1);
 }
 
 /* Responsive fixes for mobile */
@@ -472,5 +487,29 @@
     .price-box {
         padding: 1rem !important;
     }
+}
+
+.stock-loading {
+    color: transparent;
+    position: relative;
+}
+
+.stock-loading::after {
+    content: '';
+    position: absolute;
+    inset: 4px 20%;
+    background: linear-gradient(
+        90deg,
+        #e0e0e0 25%,
+        #f5f5f5 37%,
+        #e0e0e0 63%
+    );
+    animation: shimmer 1.2s infinite;
+    border-radius: 4px;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200px 0; }
+    100% { background-position: 200px 0; }
 }
 </style>

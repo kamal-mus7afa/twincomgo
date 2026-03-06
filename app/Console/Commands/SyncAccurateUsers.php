@@ -10,255 +10,244 @@ use Illuminate\Support\Facades\Log;
 
 class SyncAccurateUsers extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'sync:accurate-users';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Sync users from Accurate API to local database';
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
         $startTime = microtime(true);
 
-        Log::info('[SyncAccurateUsers] Command started');
+        Log::info('===== SYNC ACCURATE USERS START =====');
         $this->info('⏳ Memulai sinkronisasi data dari Accurate...');
 
         try {
             $acc = AccurateGlobal::token();
         } catch (\Throwable $e) {
-            Log::error('[SyncAccurateUsers] Failed to get token', [
-                'error' => $e->getMessage()
-            ]);
+            Log::error('Token error: ' . $e->getMessage());
             return Command::FAILURE;
         }
 
-        $token   = $acc['access_token'] ?? null;
-        $session = $acc['session_id'] ?? null;
+        $headers = [
+            'Authorization' => 'Bearer ' . $acc['access_token'],
+            'X-Session-ID'  => $acc['session_id']
+        ];
+
         $pageSize = 100;
-
-        if (!$token || !$session) {
-            Log::error('[SyncAccurateUsers] Token or session missing', $acc);
-            return Command::FAILURE;
-        }
-
-        Log::info('[SyncAccurateUsers] Token & session acquired');
 
         $totalUsers   = 0;
         $newUsers     = 0;
         $updatedUsers = 0;
+        $deletedUsers = 0;
+        $skippedUsers = 0;
 
-        /**
-         * ==================================================
-         * 1️⃣ Sinkronisasi Customer Reseller
-         * ==================================================
-         */
-        Log::info('[SyncAccurateUsers] Start syncing customer reseller');
+        /*
+        |--------------------------------------------------------------------------
+        | CUSTOMER RESELLER
+        |--------------------------------------------------------------------------
+        */
         $this->info("👥 Sinkronisasi data Customer Reseller...");
-
         $page = 1;
+
         do {
-            Log::info('[SyncAccurateUsers] Fetch customer page', [
-                'page' => $page
-            ]);
-
-            $params = [
-                'sp.page'     => $page,
-                'sp.pageSize' => $pageSize,
-                'fields'      => 'id,name,email,suspended,customerBranchName,customerNo',
-                'filter.customerCategoryId' => 2650,
-            ];
-
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $token,
-                'X-Session-ID'  => $session
-            ])->get('https://public.accurate.id/accurate/api/customer/list.do', $params);
+            $response = Http::withHeaders($headers)->get(
+                'https://public.accurate.id/accurate/api/customer/list.do',
+                [
+                    'sp.page'     => $page,
+                    'sp.pageSize' => $pageSize,
+                    'fields'      => 'id,name,email,suspended,customerBranchName,mobilePhone',
+                    'filter.customerCategoryId' => 2650,
+                    'filter.suspended' => false,
+                ]
+            );
 
             if ($response->failed()) {
-                Log::error('[SyncAccurateUsers] Failed fetch customer list', [
-                    'page' => $page,
-                    'status' => $response->status(),
-                    'body' => $response->body()
-                ]);
+                Log::error("Customer fetch gagal page {$page}");
                 break;
             }
 
             $customers = $response->json()['d'] ?? [];
-            if (empty($customers)) {
-                Log::info('[SyncAccurateUsers] No more customers');
-                break;
-            }
-
-            $ids = collect($customers)->pluck('id')->filter();
-            $batches = $ids->chunk(50);
-            $withProvince = [];
-
-            foreach ($batches as $batch) {
-                $detailResponses = Http::pool(fn ($pool) =>
-                    $batch->map(fn ($id) =>
-                        $pool->withHeaders([
-                            'Authorization' => 'Bearer ' . $token,
-                            'X-Session-ID'  => $session
-                        ])->get("https://public.accurate.id/accurate/api/customer/detail.do?id={$id}")
-                    )->all()
-                );
-
-                foreach ($detailResponses as $resp) {
-                    if ($resp->successful()) {
-                        $d = $resp->json()['d'] ?? [];
-                        if (isset($d['id'])) {
-                            $withProvince[$d['id']] = $d['shipProvince'] ?? null;
-                        }
-                    }
-                }
-
-                usleep(200_000); // throttle
-            }
+            if (empty($customers)) break;
 
             foreach ($customers as $cust) {
-                $accurateId = $cust['id'] ?? null;
-                $email      = $cust['email'] ?? null;
-                $province   = $withProvince[$accurateId] ?? null;
 
-                if (!$accurateId || !$email) {
-                    continue;
-                }
+                    $accurateId = $cust['id'] ?? null;
+                    $email      = strtolower(trim($cust['email'] ?? ''));
+                    $phone      = trim($cust['mobilePhone'] ?? '');
 
-                if (!empty($cust['suspended']) && $cust['suspended'] === true) {
-                    User::where('accurate_id', $accurateId)
-                        ->orWhere(fn ($q) => $q->whereNull('accurate_id')->where('email', $email))
-                        ->delete();
+                    if (!$accurateId) continue;
 
-                    Log::info('[SyncAccurateUsers] User deleted (suspended)', [
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Kalau suspended → delete by phone OR email
+                    |--------------------------------------------------------------------------
+                    */
+                    if ($cust['suspended'] === true) {
+
+                        $query = User::where('status', 'RESELLER');
+
+                        if ($phone) {
+                            $query->where('mobile_phone', $phone);
+                        } elseif ($email) {
+                            $query->where('email', $email);
+                        }
+
+                        $deleted = $query->delete();
+
+                        if ($deleted) {
+                            Log::info('RESELLER DELETED (suspended)', [
+                                'accurate_id' => $accurateId,
+                                'phone' => $phone,
+                                'email' => $email
+                            ]);
+                        }
+
+                        continue;
+                    }
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Tentukan identity (phone prioritas, fallback email)
+                    |--------------------------------------------------------------------------
+                    */
+                    if ($phone) {
+                        $user = User::where('mobile_phone', $phone)
+                            ->where('status', 'RESELLER')
+                            ->first();
+                    } elseif ($email) {
+                        $user = User::where('email', $email)
+                            ->where('status', 'RESELLER')
+                            ->first();
+                    } else {
+                        Log::warning('RESELLER SKIPPED (no phone & no email)', [
+                            'accurate_id' => $accurateId
+                        ]);
+                        continue;
+                    }
+
+                    $isNew = false;
+
+                    if (!$user) {
+                        $user = new User();
+                        $user->password = bcrypt('twincom@reseller123');
+                        $isNew = true;
+                    }
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Update Data
+                    |--------------------------------------------------------------------------
+                    */
+                    $user->accurate_id     = $accurateId;
+                    $user->name            = $cust['name'] ?? null;
+                    $user->email           = $email ?: null;
+                    $user->mobile_phone    = $phone ?: null;
+                    $user->status          = 'RESELLER';
+                    $user->customer_branch = $cust['customerBranchName'] ?? null;
+                    $user->save();
+
+                    Log::info($isNew ? 'RESELLER CREATED' : 'RESELLER UPDATED', [
                         'accurate_id' => $accurateId,
+                        'phone' => $phone,
                         'email' => $email
                     ]);
-                    continue;
+
+                    $totalUsers++;
                 }
-
-                $user = User::where('accurate_id', $accurateId)
-                    ->orWhere(fn ($q) => $q->whereNull('accurate_id')->where('email', $email))
-                    ->first();
-
-                if (!$user) {
-                    $user = new User();
-                    $user->password = bcrypt('twincom@reseller123');
-                    $newUsers++;
-                } else {
-                    $updatedUsers++;
-                }
-
-                $user->accurate_id     = $accurateId;
-                $user->name            = $cust['name'] ?? null;
-                $user->email           = $email;
-                $user->province        = $province;
-                $user->status          = 'RESELLER';
-                $user->customer_branch = $cust['customerBranchName'] ?? null;
-                $user->save();
-
-                $totalUsers++;
-            }
-
-            Log::info('[SyncAccurateUsers] Customer page processed', [
-                'page' => $page,
-                'totalUsers' => $totalUsers,
-                'newUsers' => $newUsers,
-                'updatedUsers' => $updatedUsers
-            ]);
 
             $page++;
+
         } while (true);
 
-        /**
-         * ==================================================
-         * 2️⃣ Sinkronisasi Karyawan
-         * ==================================================
-         */
-        Log::info('[SyncAccurateUsers] Start syncing employees');
+        /*
+        |--------------------------------------------------------------------------
+        | EMPLOYEE
+        |--------------------------------------------------------------------------
+        */
         $this->info("👨‍💼 Sinkronisasi data Karyawan...");
-
         $page = 1;
+
         do {
-            Log::info('[SyncAccurateUsers] Fetch employee page', [
-                'page' => $page
-            ]);
-
-            $params = [
-                'sp.page'     => $page,
-                'sp.pageSize' => $pageSize,
-                'fields'      => 'id,name,email,suspended',
-            ];
-
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $token,
-                'X-Session-ID'  => $session
-            ])->get('https://public.accurate.id/accurate/api/employee/list.do', $params);
+            $response = Http::withHeaders($headers)->get(
+                'https://public.accurate.id/accurate/api/employee/list.do',
+                [
+                    'sp.page'     => $page,
+                    'sp.pageSize' => $pageSize,
+                    'fields'      => 'id,name,email,suspended',
+                ]
+            );
 
             if ($response->failed()) {
-                Log::error('[SyncAccurateUsers] Failed fetch employee list', [
-                    'page' => $page,
-                    'status' => $response->status(),
-                    'body' => $response->body()
-                ]);
+                Log::error("Employee fetch gagal page {$page}");
                 break;
             }
 
             $employees = $response->json()['d'] ?? [];
-            if (empty($employees)) {
-                Log::info('[SyncAccurateUsers] No more employees');
-                break;
-            }
+            if (empty($employees)) break;
 
-            foreach ($employees as $employee) {
-                $accurateId = $employee['id'] ?? null;
-                $email      = $employee['email'] ?? null;
+            foreach ($employees as $emp) {
 
-                if (!$accurateId || !$email) continue;
+                $accurateId = $emp['id'] ?? null;
+                $email      = strtolower(trim($emp['email'] ?? ''));
 
-                if (!empty($employee['suspended']) && $employee['suspended'] === true) {
-                    User::where('accurate_id', $accurateId)
-                        ->orWhere(fn ($q) => $q->whereNull('accurate_id')->where('email', $email))
-                        ->delete();
-
-                    Log::info('[SyncAccurateUsers] Employee deleted (suspended)', [
-                        'accurate_id' => $accurateId,
-                        'email' => $email
-                    ]);
+                if (!$accurateId || !$email) {
+                    $skippedUsers++;
                     continue;
                 }
 
-                $user = User::where('accurate_id', $accurateId)
-                    ->orWhere(fn ($q) => $q->whereNull('accurate_id')->where('email', $email))
-                    ->first();
+                if (($emp['suspended'] ?? false) === true) {
+
+                    $deleted = User::where('email', $email)
+                        ->where('status', 'KARYAWAN')
+                        ->delete();
+
+                    if ($deleted) {
+                        Log::info('DELETED EMPLOYEE (suspended)', [
+                            'accurate_id' => $accurateId,
+                            'email' => $email
+                        ]);
+                    }
+
+                    continue;
+                }
+
+                $user = User::where('email', $email)
+                        ->where('status', 'KARYAWAN')
+                        ->first();
+
+                $isNew = false;
 
                 if (!$user) {
                     $user = new User();
                     $user->password = bcrypt('twincom@karyawan123');
+                    $isNew = true;
                     $newUsers++;
                 } else {
                     $updatedUsers++;
                 }
 
                 $user->accurate_id = $accurateId;
-                $user->name        = $employee['name'] ?? null;
+                $user->name        = $emp['name'] ?? null;
                 $user->email       = $email;
                 $user->status      = 'KARYAWAN';
                 $user->save();
+
+                if ($isNew) {
+                    Log::info('CREATED EMPLOYEE', [
+                        'accurate_id' => $accurateId,
+                        'email' => $email
+                    ]);
+                } else {
+                    Log::info('UPDATED EMPLOYEE', [
+                        'accurate_id' => $accurateId,
+                        'email' => $email
+                    ]);
+                }
 
                 $totalUsers++;
             }
 
             $page++;
+
         } while (true);
 
         /**
@@ -279,22 +268,16 @@ class SyncAccurateUsers extends Command
             $totalUsers++;
         }
 
-        /**
-         * ==================================================
-         * ✅ DONE
-         * ==================================================
-         */
-        $duration = round(microtime(true) - $startTime, 2);
-
-        Log::info('[SyncAccurateUsers] Command finished', [
-            'totalUsers' => $totalUsers,
-            'newUsers' => $newUsers,
-            'updatedUsers' => $updatedUsers,
-            'execution_time_sec' => $duration
+        Log::info('===== SYNC FINISHED =====', [
+            'total_processed' => $totalUsers,
+            'created' => $newUsers,
+            'updated' => $updatedUsers,
+            'deleted' => $deletedUsers,
+            'skipped' => $skippedUsers,
+            'duration_sec' => round(microtime(true) - $startTime, 2)
         ]);
 
         $this->info("✅ Sinkronisasi selesai.");
-        $this->info("⏱️ Waktu eksekusi: {$duration} detik");
 
         return Command::SUCCESS;
     }

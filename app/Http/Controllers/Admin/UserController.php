@@ -42,7 +42,7 @@ class UserController extends Controller
             'name'                => ['required', 'string', 'max:150'],
             'email'               => ['required', 'email', 'max:190', 'unique:users,email'],
             'password'            => ['required', 'string', 'min:6', 'confirmed'],
-            'status'              => ['required', Rule::in(['admin', 'KARYAWAN', 'RESELLER'])],
+            'status'              => ['required', Rule::in(['admin', 'KARYAWAN', 'RESELLER', 'USER'])],
             'accurate_account_id' => ['nullable', 'exists:accurate_accounts,id'],
         ]);
 
@@ -72,7 +72,7 @@ class UserController extends Controller
             'name'                => ['required', 'string', 'max:150'],
             'email'               => ['required', 'email', 'max:190', Rule::unique('users', 'email')->ignore($user->id)],
             'password'            => ['nullable', 'string', 'min:6', 'confirmed'],
-            'status'              => ['required', Rule::in(['admin', 'KARYAWAN', 'RESELLER'])],
+            'status'              => ['required', Rule::in(['admin', 'KARYAWAN', 'RESELLER', 'USER'])],
             'accurate_account_id' => ['nullable', 'exists:accurate_accounts,id'],
         ]);
 
