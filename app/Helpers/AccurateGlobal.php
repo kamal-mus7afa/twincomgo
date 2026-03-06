@@ -13,7 +13,7 @@ class AccurateGlobal
     {
         $account = DB::table('accurate_accounts')
             ->where('status', 'active')
-            ->where('label', 'GLOBAL')
+            ->where('label', $label)
             ->orderByDesc('expires_at')
             ->first();
 

@@ -477,48 +477,60 @@
     }
 
     /* ===== RESPONSIVE ===== */
-    @media (max-width: 768px) {
-        .page-header {
-            padding: 20px;
+    @media (max-width: 767.98px) {
+        body {
+            font-size: 12px;
+        }
+
+        .page-wrapper {
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+        }
+
+        #header-total-items {
+            width: auto !important;
+        }
+
+        .pagination {
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+
+        .pagination .page-item {
+            flex: 1 1 auto;
             text-align: center;
         }
-        
-        .page-header h1 {
-            font-size: 1.8rem;
+
+        .pagination .page-link {
+            padding: 6px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
         }
-        
-        .stats-grid {
-            grid-template-columns: 1fr;
+
+        /* 🔹 Buat tombol prev/next jadi besar dan mudah diklik */
+        .pagination .page-link-ajax {
+            min-width: 60px;
         }
-        
-        .filter-header {
-            flex-direction: column;
-            text-align: center;
+
+        /* 🔹 Ganti tampilan halaman aktif */
+        .pagination .page-item.disabled .page-link {
+            background: transparent;
+            color: #6c757d;
+            border: none;
+            font-weight: 500;
         }
-        
-        .table-header {
-            flex-direction: column;
-            text-align: center;
+
+        /* 🔹 Tambahkan shadow halus biar tampil modern */
+        .pagination .page-link {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        
-        .table-container {
-            max-height: none;
-        }
-        
-        .table thead th,
-        .table tbody td {
-            padding: 12px 8px;
-            font-size: 0.6rem;
-        }
-        
-        .product-image-sm,
-        .product-image-placeholder {
-            width: 40px;
-            height: 40px;
-            font-size: 16px;
-        }
-        .mobile-list {
-            display: none;
+
+        /* 🔹 Sedikit jarak dari elemen bawah */
+        nav {
+            margin-top: 10px;
         }
 
         /* 🔹 Form filter di atas */
@@ -539,6 +551,93 @@
         .btn {
             font-size: 10px;
             padding: 5px 8px;
+        }
+
+        /* 🔹 Sembunyikan tabel di mobile */
+        .desktop-table {
+            display: none !important;
+        }
+
+        /* 🔹 Style card produk di mobile */
+        .product-card {
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 0.6rem;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* BARIS: Judul + Harga */
+        .product-card .top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        /* Nama Produk — boleh panjang, wrap, tapi tidak mendorong harga */
+        .product-title {
+            flex: 1;
+            min-width: 0;
+            font-size: 10px;
+            font-weight: 600;
+            color: #111;
+            line-height: 1.3;
+            white-space: normal;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        /* Harga — tidak boleh menyempit, tidak boleh terdorong */
+        .harga-grid {
+            flex-shrink: 0;
+            white-space: nowrap;
+            font-weight: 700;
+            font-size: 10px;
+        }
+
+        .harga-rp {
+            font-size: 0.75rem;
+        }
+
+        .harga-nominal {
+            font-size: 12px;
+            color: #000;
+        }
+
+        .product-meta {
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        .btn-detail {
+            font-size: 10px;
+            padding: 4px 8px;
+        }
+
+        .product-card .d-flex {
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .product-title {
+            flex: 1 1 65%; /* biar teks ambil ruang 65% */
+            min-width: 0; /* biar teks bisa wrap */
+            word-break: break-word;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+
+        .harga-grid {
+            flex: 0 0 35%; /* biar harga di kanan tetap sempit */
+            text-align: right;
+        }
+
+        .product-code {
+            font-size: 9px;
+            color: #888;
+            letter-spacing: 0.3px;
         }
     }
     @media (min-width: 768px) {
