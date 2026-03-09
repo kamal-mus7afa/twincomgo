@@ -385,11 +385,39 @@
         animation: fadeInUp 0.6s ease-out;
     }
 
+    .dropdown {
+        position: relative;
+    }
+
+    .dropdown-menu {
+        z-index: 2000;
+    }
+
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
+        .date-filter-btn:hover {
+            transform: none;
+        }
         .page-header {
             padding: 20px;
             text-align: center;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            z-index: 3000 !important;
+            position: absolute !important;
+        }
+
+        .filter-card,
+        .row,
+        .col-xl-3,
+        .col-lg-5,
+        .col-md-6 {
+            overflow: visible !important;
         }
         
         .page-header h1 {
@@ -513,7 +541,7 @@
                 {{-- Date Filter --}}
                 <div class="col-xl-3 col-lg-5 col-md-6">
                     <label class="form-label fw-semibold">Date Range</label>
-                    <div class="dropdown w-100">
+                    <div class="dropdown w-100" data-bs-auto-close="outside">
                         <button class="btn date-filter-btn dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
                             <i class="bi bi-calendar3 me-2"></i>
                             @if(request('start_date') && request('end_date'))

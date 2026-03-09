@@ -686,7 +686,7 @@
 
         {{-- MOBILE EXPORT --}}
         <div class="d-md-none mt-3">
-            <a href="#" id="btn-export-pdf-mobile" class="btn text-white w-100" style="background: linear-gradient(135deg, #dc2626, #b91c1c);" data-export-url="{{ route('items.exportPdf') }}">
+            <a href="#" id="btn-export-pdf" class="btn text-white w-100" style="background: linear-gradient(135deg, #dc2626, #b91c1c);" data-export-url="{{ route('items.exportPdf') }}">
                 <i class="bi bi-filetype-pdf me-2"></i>Export PDF
             </a>
         </div>
