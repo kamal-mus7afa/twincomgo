@@ -25,7 +25,7 @@ class ResellerController extends Controller
         $session = $acc['session_id'];
         $baseUrl = rtrim(config('services.accurate.base_api'), '/');
 
-        $perPage = 10;
+        $perPage = $request->query('per_page', 10);
         $pageWeb = max(1, (int) $request->query('page', 1));
         $offset  = ($pageWeb - 1) * $perPage;
 

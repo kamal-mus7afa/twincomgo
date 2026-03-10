@@ -49,6 +49,20 @@
     <!-- 🔍 Filter -->
     <form method="GET" class="mb-4 filter-card shadow" id="filter-form">
         <div class="row g-2 justify-content-start">
+
+            <!-- 🔸 Kategori -->
+            <div class="col-12 col-md-3 col-lg-2">
+                <label for="category" class="form-label mb-1">Pilih kategori</label>
+                <select name="category_id[]" id="category_search" class="form-select shadow-sm" multiple>
+                    @foreach($categories as $cat)
+                        <option value="{{ $cat['id'] }}"
+                            {{ collect(request('category_id'))->contains($cat['id']) ? 'selected' : '' }}>
+                            {{ $cat['name'] }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
             <div class="col-12 col-md-3 col-lg-2">
                 <label for="stok_ada" class="form-label mb-1">Stok Ready</label>
                 <select name="stok_ada" class="form-select shadow-sm">
@@ -81,19 +95,6 @@
                 </div>
             </div>
             
-            <!-- 🔸 Kategori -->
-            <div class="col-12 col-md-3 col-lg-2">
-                <label for="category" class="form-label mb-1">Pilih kategori</label>
-                <select name="category_id[]" id="category_search" class="form-select shadow-sm" multiple>
-                    @foreach($categories as $cat)
-                        <option value="{{ $cat['id'] }}"
-                            {{ collect(request('category_id'))->contains($cat['id']) ? 'selected' : '' }}>
-                            {{ $cat['name'] }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
             <!-- 🔸 Pencarian -->
             <div class="col-12 col-md-6 col-lg-3">
                 <label for="search" class="form-label mb-1">Gunakan % untuk kombinasi kata pencarian</label>
@@ -113,10 +114,22 @@
         </div>
     </form>
 
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <h4 class="fw-bold text-white text-shadow-sm mb-2 mb-md-0">
             <i class="bi bi-box-seam me-2"></i> Daftar Produk
         </h4>
+
+        <div class="d-flex gap-2">
+            {{-- Tambahan tombol lain bisa di sini kalau mau (misal export Excel) --}}
+            <div class="d-flex align-items-center">
+                <p class="mb-0 text-white">item perpage : </p>
+            </div>
+            <select id="per_page" class="form-select form-select-sm" style="width: 80px;">
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+            </select>
+        </div>
     </div>
 
     <!-- 🔹 Kontainer hasil produk -->
@@ -143,6 +156,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const filterForm           = document.getElementById("filter-form");
     const headerTotalBtn       = document.querySelector("#header-total-items");
     const categorySelect       = document.getElementById("category_search");
+
+    const perPageSelect = document.getElementById("per_page");
+    if (perPageSelect) {
+        perPageSelect.addEventListener("change", function () {
+            submitFilterAjax();
+        });
+    }
 
     let currentPage = parseInt(
         new URL(window.location.href).searchParams.get("page") || "1",
@@ -306,6 +326,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const params = new URLSearchParams(new FormData(filterForm));
 
+        // >>> Inject manual per_page because select is outside form
+        const perPageSelect = document.getElementById("per_page");
+        if (perPageSelect) {
+            params.set("per_page", perPageSelect.value);
+        }
+
         return "{{ route('reseller.index') }}?" + params.toString();
     }
 
@@ -335,6 +361,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         const params = new URLSearchParams(new FormData(filterForm));
+        const perPageSelect = document.getElementById("per_page");
+        if (perPageSelect) {
+            params.set("per_page", perPageSelect.value);
+        }
         params.set("page", currentPage.toString());
 
         const pdfUrl = `${btn.dataset.exportUrl}?${params.toString()}`;

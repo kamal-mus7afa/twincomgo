@@ -17,7 +17,7 @@
         </div>
 
         <!-- Stok Ready -->
-        <div class="col-6 col-sm-6 col-md-6 col-lg-auto">
+        <div class="col-6 col-sm-6 col-md-6 col-lg-2">
             <label class="form-label mb-1">Stok Ready</label>
             <select name="stok_ada" class="form-select shadow-sm">
                 <option value="1" {{ request('stok_ada', '1') == '1' ? 'selected' : '' }}>Ya</option>
@@ -26,11 +26,24 @@
         </div>
 
         <!-- Jenis Harga -->
-        <div class="col-6 col-sm-6 col-md-6 col-lg-auto">
+        <div class="col-6 col-sm-6 col-md-6 col-lg-2">
             <label class="form-label mb-1">Jenis Harga</label>
             <select name="price_mode" class="form-select shadow-sm">
                 <option value="default" {{ request('price_mode', 'default') == 'default' ? 'selected' : '' }}>User</option>
                 <option value="reseller" {{ request('price_mode') == 'reseller' ? 'selected' : '' }}>Reseller</option>
+            </select>
+        </div>
+        
+        {{-- Jenis Stok --}}
+        <div class="col-12 col-sm-12 col-md-12 col-lg-2">
+            <label class="form-label mb-1">Jenis Stok</label>
+            <select name="stock_type" class="form-select shadow-sm">
+                <option value="availableToSell" {{ request('stock_type', 'availableToSell') == 'availableToSell' ? 'selected' : '' }}>
+                    Stok Dapat Dijual
+                </option>
+                <option value="allQuantity" {{ request('stock_type') == 'allQuantity' ? 'selected' : '' }}>
+                    Total Stok
+                </option>
             </select>
         </div>
 

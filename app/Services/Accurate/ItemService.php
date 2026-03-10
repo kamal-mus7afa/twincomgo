@@ -18,6 +18,7 @@ class ItemService
         $search     = trim($request->query('search', ''));
         $categoryId = $request->query('category_id');
         $stokAda    = $request->query('stok_ada', '1');
+        $stockType = $request->query('stock_type', 'availableToSell');
         $priceMode  = $request->query('price_mode', 'default');
 
         $minPrice = $request->filled('min_price')
@@ -49,6 +50,7 @@ class ItemService
         $processRow = function ($row) use (
             &$buffer,
             $stokAda,
+            $stockType,
             $usePriceFilter,
             $minPrice,
             $maxPrice,
@@ -62,7 +64,9 @@ class ItemService
                 return false;
             }
 
-            if ($stokAda === '1' && ($row['availableToSell'] ?? 0) <= 0) {
+            $currentStock = $row[$stockType] ?? 0;
+
+            if ($stokAda === '1' && $currentStock <= 0) {
                 return;
             }
 
@@ -75,6 +79,8 @@ class ItemService
                 $row['price'] = $price;
             }
 
+            $row['selected_stock'] = $currentStock;
+
             $buffer->push($row);
         };
 
@@ -83,7 +89,7 @@ class ItemService
             $query = [
                 'sp.page'         => $pageAcc,
                 'sp.pageSize'     => 100,
-                'fields'          => 'id,name,no,availableToSell,itemCategory.name,availableToSellInAllUnit,itemCategory',
+                'fields'          => 'id,name,no,availableToSell,itemCategory.name,availableToSellInAllUnit,itemCategory,allQuantity',
                 'filter.suspended'=> false,
             ];
 
@@ -107,6 +113,7 @@ class ItemService
             $sp   = $json['sp'] ?? [];
 
             $rawScanned += $rows->count();
+
             if ($rows->isEmpty()) break;
 
             foreach ($rows as $row) {
@@ -135,7 +142,7 @@ class ItemService
             'page'       => $pageWeb,
             'pageCount'  => $hasMore ? $pageWeb + 1 : $pageWeb,
             'totalItems' => $totalFiltered,
-            'filters'    => compact('search', 'categoryId', 'stokAda', 'minPrice', 'maxPrice', 'priceMode'),
+            'filters'    => compact('search', 'categoryId', 'stokAda','stockType', 'minPrice', 'maxPrice', 'priceMode'),
         ];
     }
 }
