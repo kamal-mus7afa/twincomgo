@@ -67,7 +67,7 @@ class ItemService
             $currentStock = $row[$stockType] ?? 0;
 
             if ($stokAda === '1' && $currentStock <= 0) {
-                return;
+                return false;
             }
 
             if ($usePriceFilter) {

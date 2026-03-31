@@ -25,9 +25,29 @@
                 <option value="20">20</option>
                 <option value="50">50</option>
             </select>
-            <a href="#" id="btn-export-pdf" class="btn btn-danger shadow-sm" data-export-url="{{ route('items.exportPdf') }}">
-                <i class="bi bi-filetype-pdf me-1"></i> Preview PDF
-            </a>
+            <div class="dropdown">
+                <button class="btn btn-dark dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-download me-1"></i> Export
+                </button>
+
+                <ul class="dropdown-menu dropdown-menu-end shadow">
+                    <li>
+                        <a href="#" id="btn-export-pdf"
+                        class="dropdown-item"
+                        data-export-url="{{ route('items.exportPdf') }}">
+                            <i class="bi bi-filetype-pdf text-danger me-2"></i> Preview PDF
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="#" id="btn-export-excel"
+                        class="dropdown-item"
+                        data-export-url="{{ route('items.excel') }}">
+                            <i class="bi bi-file-earmark-excel text-success me-2"></i> Export Excel
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -314,6 +334,44 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const pdfUrl = `${btn.dataset.exportUrl}?${params.toString()}`;
         window.open(pdfUrl, "_blank");
+    });
+
+    document.addEventListener("click", function (e) {
+        const btn = e.target.closest("#btn-export-excel");
+        if (!btn) return;
+
+        e.preventDefault();
+
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Exporting';
+        btn.classList.add('disabled');
+
+        const params = new URLSearchParams(new FormData(filterForm));
+
+        const perPageSelect = document.getElementById("per_page");
+        if (perPageSelect) {
+            params.set("per_page", perPageSelect.value);
+        }
+
+        params.set("page", currentPage.toString());
+
+        const excelUrl = `${btn.dataset.exportUrl}?${params.toString()}`;
+
+        let iframe = document.getElementById("download-frame");
+
+        if (!iframe) {
+            iframe = document.createElement("iframe");
+            iframe.style.display = "none";
+            iframe.id = "download-frame";
+            document.body.appendChild(iframe);
+        }
+
+        iframe.src = excelUrl;
+
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.classList.remove('disabled');
+        }, 2000);
     });
 
     // ==================================

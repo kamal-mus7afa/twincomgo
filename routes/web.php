@@ -15,6 +15,7 @@ use App\Http\Controllers\AuthinticationController;
 use App\Http\Controllers\AccurateAccountController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\GaleriController;
 use App\Http\Controllers\ListController;
 
 
@@ -23,7 +24,9 @@ Route::get('/test500', function () {
 });
 
 Route::get('/', function () {
-    return redirect('/login'); 
+    return Auth::check()
+        ? redirect()->route('queue.number')
+        : redirect()->route('auth.login');
 });
 Route::get('/item/image', [ItemController::class, 'getItemImage'])->name('items.image');
 Route::get('/homepage', [CustomerController::class, 'homePage'])->name('home.page');
@@ -33,7 +36,7 @@ Route::get('/homepage', [CustomerController::class, 'homePage'])->name('home.pag
 // =================================================================================================================================
     Route::get('/login',         [AuthinticationController::class, 'index'])->middleware('guest')->name('auth.login');
     Route::post('/login',   [AuthinticationController::class, 'login'])->name('auth.login.post');
-    Route::post('/logout',  [AuthinticationController::class, 'logout'])->name('logout');
+    Route::post('/logout',  [AuthinticationController::class, 'logout'])->name('logout')->middleware('auth');
 // =================================================================================================================================
 
 
@@ -77,6 +80,7 @@ Route::get('/homepage', [CustomerController::class, 'homePage'])->name('home.pag
     Route::get('/karyawan/{id}/price',              [KaryawanController::class, 'getPrice']);
     Route::get('/branches',                         [KaryawanController::class, 'getBranches']);
     Route::get('/items/export-pdf',                 [ItemController::class, 'exportPdf1'])->name('items.exportPdf');
+    Route::get('/items/export-excel',               [ItemController::class, 'exportExcel1'])->name('items.excel');
     
     // AJAX-KARYAWAN
     Route::get('/ajax/warehouse-stock',             [KaryawanController::class, 'getWarehouseStock'])->name('ajax.warehouse.stock');
@@ -193,3 +197,9 @@ Route::post('/list/remove', [ListController::class, 'remove']);
 Route::get('/list/pdf', [ListController::class, 'pdf']);
 
 
+Route::get("/admin/simulasi/rakit-pc", [AdminController::class, 'indexRakitPc'])->name('admin.simulasi.rakitpc');
+Route::get("/admin/simulasi/rakit-cctv", [AdminController::class, 'indexRakitCctv'])->name('admin.simulasi.rakitcctv');
+Route::get("/admin/galeri", [GaleriController::class, 'index'])->name('admin.galeri.index');
+
+Route::get("/admin/galeri/list", [GaleriController::class, 'getItems'])->name('admin.galeri.getItems');
+Route::get("/admin/galeri/sn", [GaleriController::class, 'getSn'])->name('admin.galeri.getSn');

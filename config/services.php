@@ -36,7 +36,7 @@ return [
         'client_secret' => env('ACCURATE_CLIENT_SECRET'),
         'redirect'      => env('ACCURATE_REDIRECT_URI'),
         'base_auth'     => 'https://account.accurate.id',
-        'base_api'      => 'https://public.accurate.id/accurate/api',
+        'base_api'      => 'https://odin.accurate.id/accurate/api',
     ],
 
 ];

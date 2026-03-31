@@ -14,7 +14,7 @@ class PriceService
         return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($itemId, $mode) {
 
             $resp = AccurateHttp::get(
-                'https://public.accurate.id/accurate/api/item/get-selling-price.do',
+                'https://odin.accurate.id/accurate/api/item/get-selling-price.do',
                 [
                     'id' => $itemId,
                     'priceCategoryName' => $mode,

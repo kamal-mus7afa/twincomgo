@@ -896,21 +896,57 @@
                 ['route' => 'admin.user', 'icon' => 'bi-people', 'label' => 'Pengguna', 'badge' => null],
                 ['route' => 'admin.items', 'icon' => 'bi-box-seam', 'label' => 'Barang & Jasa', 'badge' => null],
                 ['route' => 'admin.log', 'icon' => 'bi-archive', 'label' => 'Log', 'badge' => null],
+                ['route' => 'admin.galeri.index', 'icon' => 'bi-shop', 'label' => 'Galeri Second', 'badge' => null],
+                [
+                    'icon' => 'bi-toggles',
+                    'label' => 'Simulasi',
+                    'children' => [
+                        ['route' => 'admin.simulasi.rakitpc', 'icon' => 'bi-pc-display', 'label' => 'Rakit PC'],
+                        ['route' => 'admin.simulasi.rakitcctv', 'icon' => 'bi-camera-video', 'label' => 'Rakit CCTV'],
+                    ]
+                ],
                 ['route' => 'aa.index', 'icon' => 'bi-diagram-3', 'label' => 'Accurate Token', 'badge' => null],
             ];
         @endphp
 
         @foreach ($navItems as $item)
-            <div class="nav-item" style="animation-delay: {{ $loop->index * 0.1 }}s">
-                <a href="{{ route($item['route']) }}"
-                   class="nav-link {{ request()->routeIs($item['route']) ? 'active' : '' }}"
-                   onclick="closeSidebar()">
-                    <i class="nav-icon bi {{ $item['icon'] }}"></i>
-                    <span class="nav-text">{{ $item['label'] }}</span>
-                    @if($item['badge'])
-                        <span class="nav-badge">{{ $item['badge'] }}</span>
-                    @endif
-                </a>
+            <div class="nav-item">
+
+                @if(isset($item['children']))
+                    <!-- Dropdown -->
+                    <div class="">
+                        <a class="nav-link"
+                        data-bs-toggle="collapse"
+                        href="#menuSimulasi"
+                        role="button"
+                        aria-expanded="false">
+
+                            <i class="nav-icon bi {{ $item['icon'] }}"></i>
+                            <span class="nav-text">{{ $item['label'] }}</span>
+                            <i class="bi bi-chevron-down ms-auto"></i>
+                        </a>
+
+                        <div class="collapse" id="menuSimulasi">
+                            <div class="ps-4">
+                                @foreach ($item['children'] as $child)
+                                    <a href="{{ route($child['route']) }}" class="nav-link">
+                                        <i class="nav-icon bi {{ $child['icon'] }}"></i>
+                                        <span class="nav-text">{{ $child['label'] }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
+                @else
+                    <!-- Normal Menu -->
+                    <a href="{{ route($item['route']) }}"
+                    class="nav-link {{ request()->routeIs($item['route']) ? 'active' : '' }}">
+                        <i class="nav-icon bi {{ $item['icon'] }}"></i>
+                        <span class="nav-text">{{ $item['label'] }}</span>
+                    </a>
+                @endif
+
             </div>
         @endforeach
     </nav>
@@ -1178,66 +1214,67 @@
         userMenu.show();
     }
 
-// ===== LOADER FUNCTIONALITY =====
-function showLoader() {
-    if (loaderTimeout) clearTimeout(loaderTimeout);
-    loader.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-
-function hideLoader() {
-    loaderTimeout = setTimeout(() => {
-        loader.style.display = 'none';
-        document.body.style.overflow = '';
-    }, 300);
-}
-
-// Handle link clicks
-document.addEventListener('click', function(e) {
-    const link = e.target.closest('a');
-    const clickableRow = e.target.closest('[onclick*="window.location"]');
-    
-    // Jika bukan link dan bukan row yang bisa diklik, return
-    if (!link && !clickableRow) return;
-    
-    // CEK APAKAH INI AJAX (dengan melihat apakah event dicegah defaultnya)
-    // atau link memiliki attribute data-ajax / data-no-loader
-    if (e.defaultPrevented || 
-        (link && (link.hasAttribute('data-ajax') || link.hasAttribute('data-no-loader')))) {
-        return; // Ini AJAX, jangan trigger loader
+    // ===== LOADER FUNCTIONALITY =====
+    function showLoader() {
+        if (loaderTimeout) clearTimeout(loaderTimeout);
+        loader.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
     }
-    
-    // Jika link memiliki href yang valid dan bukan anchor
-    if (link) {
-        const href = link.getAttribute('href');
-        if (href && href !== '#' && !href.startsWith('#') && 
-            link.getAttribute('target') !== '_blank') {
-            
-            // Cek apakah link ke halaman yang sama (anchor)
-            if (href.startsWith(window.location.origin) || href.startsWith('/')) {
-                const url = new URL(href, window.location.origin);
-                if (url.pathname === window.location.pathname && url.hash) {
-                    return; // Anchor di halaman yang sama
+
+    function hideLoader() {
+        loaderTimeout = setTimeout(() => {
+            loader.style.display = 'none';
+            document.body.style.overflow = '';
+        }, 300);
+    }
+
+    // Handle link clicks
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('a');
+        const clickableRow = e.target.closest('[onclick*="window.location"]');
+        
+        // Jika bukan link dan bukan row yang bisa diklik, return
+        if (!link && !clickableRow) return;
+        
+        // CEK APAKAH INI AJAX (dengan melihat apakah event dicegah defaultnya)
+        // atau link memiliki attribute data-ajax / data-no-loader
+        if (e.defaultPrevented || 
+            (link && (link.hasAttribute('data-ajax') || link.hasAttribute('data-no-loader')))) {
+            return; // Ini AJAX, jangan trigger loader
+        }
+        
+        // Jika link memiliki href yang valid dan bukan anchor
+        if (link) {
+            const href = link.getAttribute('href');
+            if (href && href !== '#' && !href.startsWith('#') && 
+                link.getAttribute('target') !== '_blank') {
+                
+                // Cek apakah link ke halaman yang sama (anchor)
+                if (href.startsWith(window.location.origin) || href.startsWith('/')) {
+                    const url = new URL(href, window.location.origin);
+                    if (url.pathname === window.location.pathname && url.hash) {
+                        return; // Anchor di halaman yang sama
+                    }
                 }
+                
+                showLoader();
             }
-            
+        }
+        
+        // Jika row yang diklik (onclick navigasi)
+        if (clickableRow) {
             showLoader();
         }
-    }
-    
-    // Jika row yang diklik (onclick navigasi)
-    if (clickableRow) {
-        showLoader();
-    }
-});
+    });
 
-// Handle form submissions
-document.addEventListener('submit', function(e) {
-    // Jika form tidak menggunakan AJAX (tidak ada preventDefault)
-    if (!e.defaultPrevented) {
-        showLoader();
-    }
-});
+    // Handle form submissions
+    document.addEventListener('submit', function(e) {
+        // Jika form tidak menggunakan AJAX (tidak ada preventDefault)
+        if (!e.defaultPrevented) {
+            showLoader();
+        }
+    });
+
     // Handle page load selesai
     window.addEventListener('load', function() {
         hideLoader();

@@ -79,7 +79,7 @@ class KaryawanController extends Controller
         $session = $acc['session_id'];
         $branchName = $request->input('branchName');
 
-        $baseUrl = 'https://public.accurate.id/accurate/api';
+        $baseUrl = rtrim(config('services.accurate.base_api'), '/');
 
         /** ---------------------------------------------
          * 1. DETAIL ITEM
@@ -120,7 +120,7 @@ class KaryawanController extends Controller
         $defaultResp = Http::withHeaders([
             'Authorization' => 'Bearer ' . $token,
             'X-Session-ID'  => $session,
-        ])->get("https://public.accurate.id/accurate/api/item/get-selling-price.do", [
+        ])->get("$baseUrl/item/get-selling-price.do", [
             'id'         => $id,
             'branchName' => $branchName,
         ]);
@@ -140,7 +140,7 @@ class KaryawanController extends Controller
         $resellerResp = Http::withHeaders([
             'Authorization' => 'Bearer ' . $token,
             'X-Session-ID'  => $session,
-        ])->get("https://public.accurate.id/accurate/api/item/get-selling-price.do", [
+        ])->get("$baseUrl/item/get-selling-price.do", [
             'id'                  => $id,
             'priceCategoryName'   => 'RESELLER',
             'discountCategoryName'=> 'RESELLER',
@@ -323,8 +323,6 @@ class KaryawanController extends Controller
 
         $partnerPrice = $userBasePrice - (($userBasePrice - $resellerBasePrice) / 2);
 
-        // dd(number_format($partnerPrice, 0, ',', '.'));
-
         return view('items.karyawan.detail', [
             'item'          => $item,
             'images'        => $fileName,
@@ -358,7 +356,7 @@ class KaryawanController extends Controller
         }
 
         // URL asli Accurate (WAJIB)
-        $url = "https://public.accurate.id{$file}?session={$session}";
+        $baseUrl = rtrim(config('services.accurate.base_api'), '/');
 
         // Token & Session
         $status = strtoupper(trim(Auth::user()->status ?? ''));
@@ -374,7 +372,7 @@ class KaryawanController extends Controller
         $response = Http::withHeaders([
             'Authorization' => "Bearer $token",
             'X-Session-ID'  => $accurateSession,
-        ])->get($url);
+        ])->get($baseUrl);
 
         if (!$response->successful()) {
             return response()->file(public_path('images/noimage.jpg'));
@@ -399,7 +397,7 @@ class KaryawanController extends Controller
         $token = $acc['access_token'];
         $session = $acc['session_id'];
 
-        $baseUrl = 'https://public.accurate.id/accurate/api';
+        $baseUrl = rtrim(config('services.accurate.base_api'), '/');
 
         /** ---------------------------------------------
          * 1. DETAIL ITEM
@@ -439,7 +437,7 @@ class KaryawanController extends Controller
         $defaultResp = Http::withHeaders([
             'Authorization' => 'Bearer ' . $token,
             'X-Session-ID'  => $session,
-        ])->get("{$baseUrl}/item/get-selling-price.do", [
+        ])->get("$baseUrl/item/get-selling-price.do", [
             'id'         => $id,
             'branchName' => $branchName,
         ]);
@@ -458,7 +456,7 @@ class KaryawanController extends Controller
         $resellerResp = Http::withHeaders([
             'Authorization' => 'Bearer ' . $token,
             'X-Session-ID'  => $session,
-        ])->get("{$baseUrl}/item/get-selling-price.do", [
+        ])->get("$baseUrl/item/get-selling-price.do", [
             'id'                  => $id,
             'branchName'          => $branchName,
             'priceCategoryName'   => 'RESELLER',
@@ -525,7 +523,6 @@ class KaryawanController extends Controller
         ]);
     }
 
-
     /**
      * ============================
      *  AJAX – REALTIME STOCK
@@ -533,48 +530,46 @@ class KaryawanController extends Controller
      */
     public function getWarehouseStock(Request $request)
     {
-        $itemId   = $request->id;
+        $itemId    = $request->id;
         $warehouse = $request->warehouse;
         $branch    = $request->branchName;
 
-        $status = strtoupper(trim(Auth::user()->status ?? ''));
+        $cacheKey = "stock_{$itemId}_{$warehouse}_{$branch}";
+
+        $stock = Cache::remember($cacheKey, 30, function () use ($itemId, $warehouse, $branch) {
+            $baseUrl = rtrim(config('services.accurate.base_api'), '/');
+            $status = strtoupper(trim(Auth::user()->status ?? ''));
 
             $label = in_array($status, ['GLOBAL', 'RESELLER'])
                 ? $status
                 : 'GLOBAL';
-        $acc     = AccurateGlobal::token($label);
-        $token   = $acc['access_token'];
-        $session = $acc['session_id'];
 
-        $resp = Http::withHeaders([
-            'Authorization' => "Bearer $token",
-            'X-Session-ID'  => $session,
-        ])->timeout(60)->retry(2, 2000)->get("https://public.accurate.id/accurate/api/item/get-on-sales.do", [
-            'id'            => $itemId,
-            'warehouseName' => $warehouse,
-            'branchName'    => $branch,
-        ]);
+            $acc = AccurateGlobal::token($label);
 
-        if (!$resp->successful()) {
-            Log::info("API Accurate gagal");
-            return response()->json([
-                'error' => true,
-                'message' => 'API Accurate gagal'
-            ], 500);
-        }
+            $resp = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $acc['access_token'],
+                'X-Session-ID'  => $acc['session_id'],
+            ])->timeout(60)->get("$baseUrl/item/get-on-sales.do", [
+                'id' => $itemId,
+                'warehouseName' => $warehouse,
+                'branchName' => $branch,
+            ]);
 
-        $data = $resp->json();
+            if ($resp->status() == 429) {
+                return ['error' => true, 'message' => 'Limit API tercapai'];
+            }
 
-        if (!isset($data['d']['availableStock'])) {
-            Log::info("Error");
-            return response()->json([
-                'error' => true,
-            ], 500);
-        }
+            if (!$resp->successful()) {
+                return ['error' => true, 'message' => 'API gagal'];
+            }
 
-        return [
-            'stock' => $data['d']['availableStock']
-        ];
+            $data = $resp->json();
+
+            return [
+                'stock' => $data['d']['availableStock'] ?? 0
+            ];
+        });
+        return response()->json($stock);
     }
 
     public function getBranches(Request $request)
@@ -586,7 +581,7 @@ class KaryawanController extends Controller
 
         // Cache selama 1 jam
         $cached = Cache::remember($cacheKey, 3600, function () use ($page) {
-
+            
             $status = strtoupper(trim(Auth::user()->status ?? ''));
 
             $label = in_array($status, ['GLOBAL', 'RESELLER'])
@@ -596,8 +591,7 @@ class KaryawanController extends Controller
             $token = $acc['access_token'];
             $session = $acc['session_id'];
 
-            $baseUrl = 'https://public.accurate.id/accurate/api';
-
+            $baseUrl = rtrim(config('services.accurate.base_api'), '/');
             $resp = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $token,
                 'X-Session-ID'  => $session,
@@ -639,7 +633,7 @@ class KaryawanController extends Controller
                 $file = '/' . $file;
             }
 
-            $url = "https://public.accurate.id{$file}?session={$session}";
+            $url = "https://odin.accurate.id{$file}?session={$session}";
 
             $resp = Http::timeout(30)->retry(2, 2000)->get($url);
 
@@ -680,7 +674,7 @@ class KaryawanController extends Controller
         $priceType       = $request->input('priceType', 'all');
         $warehouseFilter = (array) $request->input('warehouses', []);
 
-        $baseUrl = 'https://public.accurate.id/accurate/api';
+        $baseUrl = rtrim(config('services.accurate.base_api'), '/');
 
         // =============================
         // 3. Ambil Detail Item
@@ -707,7 +701,7 @@ class KaryawanController extends Controller
             ->toArray();
 
         foreach ($imageList as $file) {
-            $url = "https://public.accurate.id{$file}?session={$session}";
+            $url = "https://odin.accurate.id{$file}?session={$session}";
 
             try {
                 $resp = Http::withHeaders([
@@ -745,7 +739,7 @@ class KaryawanController extends Controller
         $defaultResp = Http::withHeaders([
             'Authorization' => 'Bearer ' . $token,
             'X-Session-ID'  => $session,
-        ])->get("https://public.accurate.id/accurate/api/item/get-selling-price.do", [
+        ])->get("$baseUrl/item/get-selling-price.do", [
             'id'         => $id,
             'branchName' => $branchName,
         ]);
@@ -765,7 +759,7 @@ class KaryawanController extends Controller
         $resellerResp = Http::withHeaders([
             'Authorization' => 'Bearer ' . $token,
             'X-Session-ID'  => $session,
-        ])->get("https://public.accurate.id/accurate/api/item/get-selling-price.do", [
+        ])->get("$baseUrl/item/get-selling-price.do", [
             'id'                  => $id,
             'priceCategoryName'   => 'RESELLER',
             'discountCategoryName'=> 'RESELLER',
@@ -948,11 +942,11 @@ class KaryawanController extends Controller
         $acc     = AccurateGlobal::token($label);
         $token = $acc['access_token'];
         $session = $acc['session_id'];
-
+        $baseUrl = rtrim(config('services.accurate.base_api'), '/');
         $resp = Http::withHeaders([
             'Authorization' => "Bearer {$token}",
             'X-Session-ID'  => $session,
-        ])->timeout(30)->retry(2, 2000)->get("https://public.accurate.id/accurate/api/item/get-on-sales.do", [
+        ])->timeout(30)->retry(2, 2000)->get("$baseUrl/item/get-on-sales.do", [
             'id'            => $itemId,
             'warehouseName' => $warehouseName,
             'branchName'    => $branchName,

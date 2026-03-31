@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Barryvdh\DomPDF\Facade\Pdf;
-
+use App\Exports\ItemsExport;
+use App\Services\Accurate\CategoryService;
 use App\Services\Accurate\ItemService;
 use App\Services\Accurate\PriceService;
-use App\Services\Accurate\CategoryService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ItemController extends Controller
 {
@@ -88,5 +89,27 @@ class ItemController extends Controller
         ])->setPaper('a4', 'portrait');
 
         return $pdf->stream('Daftar Produk.pdf');
+    }
+
+    public function exportExcel1(
+        Request $request,
+        ItemService $items,
+        PriceService $prices
+    ) {
+        $data = $items->fetchItemsForList($request);
+
+        $priceCategory = $data['filters']['priceMode'] === 'reseller'
+            ? 'RESELLER'
+            : 'USER';
+
+        $itemsWithPrice = $data['items']->map(function ($item) use ($prices, $priceCategory) {
+            $item['price'] = $prices->get($item['id'], $priceCategory);
+            return $item;
+        });
+
+        return Excel::download(
+            new ItemsExport($itemsWithPrice),
+            'Daftar Produk.xlsx'
+        );
     }
 }

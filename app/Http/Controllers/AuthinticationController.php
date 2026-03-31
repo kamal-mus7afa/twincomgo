@@ -62,7 +62,8 @@ class AuthinticationController extends Controller
             return redirect()->route('auth.login');
         }
 
-        return back()->with('loginError', 'Email atau password salah!');
+        Auth::logout();
+        return back()->with('loginError', 'Status user tidak valid');
     }
 
 

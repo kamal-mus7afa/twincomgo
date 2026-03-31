@@ -122,7 +122,7 @@ class ResellerController extends Controller
             $resp = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $token,
                 'X-Session-ID'  => $session,
-            ])->timeout(60)->retry(3, 2000)->get("$baseUrl/item/list.do", $query);
+            ])->timeout(60)->retry(3, 2000)->get("{$baseUrl}/item/list.do", $query);
 
             if (!$resp->successful()) break;
 
@@ -184,7 +184,7 @@ class ResellerController extends Controller
                     $resp = Http::withHeaders([
                         'Authorization' => 'Bearer ' . $token,
                         'X-Session-ID'  => $session,
-                    ])->timeout(60)->retry(3, 2000)->get("$baseUrl/item/list.do", $query);
+                    ])->timeout(60)->retry(3, 2000)->get("{$baseUrl}/item/list.do", $query);
 
                     if (!$resp->successful()) break 2;
 
@@ -252,11 +252,12 @@ class ResellerController extends Controller
     // ===================================================
     private function getPriceGlobal($itemId, $token, $session, $priceCategory = 'RESELLER')
     {
+        $baseUrl = rtrim(config('services.accurate.base_api'), '/');
         try {
             $resp = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $token,
                 'X-Session-ID'  => $session,
-            ])->timeout(60)->retry(3, 2000)->get("https://public.accurate.id/accurate/api/item/get-selling-price.do", [
+            ])->timeout(60)->retry(3, 2000)->get("{$baseUrl}/item/get-selling-price.do", [
                 'id'                 => $itemId,
                 'priceCategoryName'  => $priceCategory,
             ]);
@@ -278,6 +279,7 @@ class ResellerController extends Controller
     // ===================================================
     public function ajaxPriceReseller(Request $request)
     {
+        $baseUrl = rtrim(config('services.accurate.base_api'), '/');
         $id = $request->query('id');
         $mode = $request->query('RESELLER', 'RESELLER');
 
@@ -312,7 +314,7 @@ class ResellerController extends Controller
             ])
             ->timeout(60)
             ->retry(3, 2000)
-            ->get("https://public.accurate.id/accurate/api/item/get-selling-price.do", [
+            ->get("{$baseUrl}/item/get-selling-price.do", [
                 'id'                 => $id,
                 'priceCategoryName'  => $mode,
             ]);
@@ -404,7 +406,7 @@ class ResellerController extends Controller
         $session = $acc['session_id'];
         $branchName = $request->input('branchName');
 
-        $baseUrl = 'https://public.accurate.id/accurate/api';
+        $baseUrl = rtrim(config('services.accurate.base_api'), '/');
 
         // 🔹 Ambil detail item
         $resp = Http::withHeaders([
@@ -445,7 +447,7 @@ class ResellerController extends Controller
         $defaultResp = Http::withHeaders([
             'Authorization' => 'Bearer ' . $token,
             'X-Session-ID'  => $session,
-        ])->get("https://public.accurate.id/accurate/api/item/get-selling-price.do", [
+        ])->get("{$baseUrl}/item/get-selling-price.do", [
             'id'         => $id,
             'branchName' => $branchName,
         ]);
@@ -453,25 +455,18 @@ class ResellerController extends Controller
         $userData = $defaultResp['d'] ?? [];
         $userPrice = $this->getPriceByUnitId($userData, $unitId);
 
-        // apply discount
-        // if (isset($userData['discountRule'][0]['discount'])) {
-        //     $disc = floatval($userData['discountRule'][0]['discount']);
-        //     $userPrice -= ($userPrice * $disc / 100);
-        // }
-
         // =============================
         // HARGA RESELLER
         // =============================
         $resellerResp = Http::withHeaders([
             'Authorization' => 'Bearer ' . $token,
             'X-Session-ID'  => $session,
-        ])->get("https://public.accurate.id/accurate/api/item/get-selling-price.do", [
+        ])->get("{$baseUrl}/item/get-selling-price.do", [
             'id'                  => $id,
             'priceCategoryName'   => 'RESELLER',
             'discountCategoryName'=> 'RESELLER',
             'branchName'          => $branchName,
         ]);
-
         $resellerData = $resellerResp['d'] ?? [];
         $resellerPrice = $this->getPriceByUnitId($resellerData, $unitId);
 
@@ -480,11 +475,6 @@ class ResellerController extends Controller
             $disc = floatval($resellerData['discountRule'][0]['discount']);
             $resellerPrice -= ($resellerPrice * $disc / 100);
         }
-
-        $prices = [
-            'user'     => $userPrice,
-            'reseller' => $resellerPrice,
-        ];
 
         // =============================================
         // AMBIL SEMUA HARGA PER UNIT & DISKON PER UNIT
@@ -648,7 +638,7 @@ class ResellerController extends Controller
         $token = $acc['access_token'];
         $session = $acc['session_id'];
 
-        $baseUrl = 'https://public.accurate.id/accurate/api';
+        $baseUrl = rtrim(config('services.accurate.base_api'), '/');
 
         // Harga USER
         $defaultResp = Http::withHeaders([

@@ -40,7 +40,13 @@
                                         </span>
                                     </div>
                                 </td>
-                                <td class="text-center">{{ $item['selected_stock'] ?? 0 }}</td>
+                                <td class="text-center">
+                                    @if (Auth::user()->status === 'admin' && Auth::user()->status === 'KARYAWAN')
+                                        {{ $item['selected_stock'] ?? 0 }}
+                                    @else
+                                        {{ $item['availableToSell']}}
+                                    @endif
+                                </td>
                                 <td class="text-center">
                                     @php
                                         $unit = preg_replace('/^[\d.,]+\s*(?=PCS\b)/i', '', trim(str_replace(['[', ']'], '', $item['availableToSellInAllUnit'] ?? '-')));
@@ -87,7 +93,11 @@
                     <div class="product-code text-muted small mt-1">{{ $item['no'] ?? '-' }}</div>
                     <div class="d-flex justify-content-between align-items-center mt-2">
                         <div class="product-meta">
-                            Stok: <strong>{{ $item['selected_stock'] ?? 0 }}</strong> /
+                            Stok: @if (Auth::user()->status === 'admin' && Auth::user()->status === 'KARYAWAN')
+                                <strong>{{ $item['selected_stock'] ?? 0 }}</strong>
+                            @else
+                                <strong>{{ $item['availableToSell'] ?? 0 }}</strong>
+                            @endif /
                             <strong>
                                 @php
                                     $unit = preg_replace('/^[\d.,]+\s*(?=PCS\b)/i', '', trim(str_replace(['[', ']'], '', $item['availableToSellInAllUnit'] ?? '-')));
