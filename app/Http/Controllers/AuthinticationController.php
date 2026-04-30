@@ -20,11 +20,7 @@ class AuthinticationController extends Controller
 
         $remember = $request->filled('remember');
 
-        if(Auth::attempt($credentials, $remember)) {
-            // RESET antrian sebelum assign queue
-            $request->session()->forget('wait_passed');
-            $request->session()->forget('queue_number');
-            
+        if(Auth::attempt($credentials, $remember)) {            
             // regenerate session baru setelah login sukses
             $request->session()->regenerate();
 
@@ -34,27 +30,27 @@ class AuthinticationController extends Controller
             if ($user->status === 'admin') {
                 activity()
                     ->causedBy($user)
-                    ->inLog($user->name)
+                    ->inLog($user->name ?? 'unknown')
                     ->log('Admin dengan email ' . $user->email . ' sedang melakukan login');
                 return redirect()->route('admin.index');
 
             } elseif ($user->status === 'RESELLER') {
                 activity()
                     ->causedBy($user)
-                    ->inLog($user->name)
+                    ->inLog($user->name ?? 'unknown')
                     ->log('Reseller dengan email ' . $user->email . ' sedang melakukan login');
-                return redirect()->route('queue.number');
+                return redirect()->route('reseller.index');
 
             } elseif ($user->status === 'KARYAWAN') {
                 activity()
                     ->causedBy($user)
-                    ->inLog($user->name)
+                    ->inLog($user->name ?? 'unknown')
                     ->log('Karyawan dengan email ' . $user->email . ' sedang melakukan login');
-                return redirect()->route('queue.number');
+                return redirect()->route('items.index');
             } elseif ($user->status === 'USER') {
                 activity()
                     ->causedBy($user)
-                    ->inLog($user->name)
+                    ->inLog($user->name ?? 'unknown')
                     ->log('Customer dengan email ' . $user->email . ' sedang melakukan login');
                 return redirect()->route('queue.number');
             }

@@ -692,7 +692,7 @@
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Created:</span>
-                            <span class="detail-value">{{ $r->created_at->format('M d, Y') }}</span>
+                            <span class="detail-value"></span>
                         </div>
                     </div>
 

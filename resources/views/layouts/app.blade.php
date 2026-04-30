@@ -3,8 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Twincomgo</title>
     <link rel="icon" href="{{ asset('images/tw.png') }}" type="image/png">
+    @laravelPWA
+    <!-- Chrome for Android theme color -->
+    <meta name="theme-color" content="#000000">
+
+    <!-- Add to homescreen for Chrome on Android -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="PWA">
+    <link rel="icon" sizes="512x512" href="/images/icons/web-app-manifest-192x192.png">
+
+    <!-- Add to homescreen for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="PWA">
+    <link rel="apple-touch-icon" href="/images/icons/web-app-manifest-192x192.png">
+
+    
+
+    <!-- Tile for Win8 -->
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/images/icons/web-app-manifest-192x192.png">
     
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -89,6 +110,21 @@
 <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.6.2/dist/dotlottie-wc.js" type="module"></script>
+
+<script type="text/javascript">
+    // Initialize the service worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/serviceworker.js', {
+            scope: '/'
+        }).then(function (registration) {
+            // Registration was successful
+            console.log('Laravel PWA: ServiceWorker registration successful with scope: ', registration.scope);
+        }, function (err) {
+            // registration failed :(
+            console.log('Laravel PWA: ServiceWorker registration failed: ', err);
+        });
+    }
+</script>
 
 <!-- Script utama proyek -->
 <script src="{{ asset('js/layout.js') }}"></script>

@@ -28,7 +28,8 @@ class PriceService
             $d = $resp->json()['d'] ?? [];
 
             return $d['unitPrice']
-                ?? ($d['unitPriceRule'][0]['price'] ?? 0);
+                ?? ($d['unitPriceRule'][0]['price'] ?? 0)
+                ?? ($d['unitPrice2'] ?? 0);
         });
     }
 }

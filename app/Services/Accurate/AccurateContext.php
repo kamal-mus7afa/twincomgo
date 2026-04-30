@@ -11,7 +11,7 @@ class AccurateContext
     {
         $status = strtoupper(trim(Auth::user()->status ?? ''));
 
-        return in_array($status, ['GLOBAL', 'RESELLER'])
+        return in_array($status, ['GLOBAL', 'RESELLER', 'DUPLIKAT'])
             ? $status
             : 'GLOBAL';  
     }

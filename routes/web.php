@@ -1,205 +1,201 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Password;
-use App\Http\Controllers\ItemController;
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\ResetController;
-use App\Http\Controllers\KaryawanController;
-use App\Http\Controllers\ResellerController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\AuthinticationController;
 use App\Http\Controllers\AccurateAccountController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\AuthinticationController;
 use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\GaleriController;
+use App\Http\Controllers\ItemController;
+use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\ListController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ResellerController;
+use App\Http\Controllers\SecondProductController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
-
-Route::get('/test500', function () {
-    abort(419);
-});
-
+/*
+|--------------------------------------------------------------------------
+| ROOT
+|--------------------------------------------------------------------------
+*/
 Route::get('/', function () {
     return Auth::check()
-        ? redirect()->route('queue.number')
+        ? redirect()->route('items.index')
         : redirect()->route('auth.login');
 });
-Route::get('/item/image', [ItemController::class, 'getItemImage'])->name('items.image');
-Route::get('/homepage', [CustomerController::class, 'homePage'])->name('home.page');
 
-// =================================================================================================================================
-//                                                       ROUTE LOGIN 
-// =================================================================================================================================
-    Route::get('/login',         [AuthinticationController::class, 'index'])->middleware('guest')->name('auth.login');
-    Route::post('/login',   [AuthinticationController::class, 'login'])->name('auth.login.post');
-    Route::post('/logout',  [AuthinticationController::class, 'logout'])->name('logout')->middleware('auth');
-// =================================================================================================================================
-
-
-// =================================================================================================================================
-//                                                    ROUTE RESET PASSWORD
-// =================================================================================================================================
-    Route::get('/forgot-password', function () {
-        return view('auth.forgot-password');
-    })->name('password.request');
-    Route::post('/forgot-password', function (Request $request) {
-        $request->validate(['email' => 'required|email']); 
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
-        return $status === Password::RESET_LINK_SENT
-            ? back()->with(['status' => __($status)])
-            : back()->withErrors(['email' => __($status)]);
-    })->name('password.email');
-    Route::get('/reset-password/{token}', function (string $token) {
-            $email = request('email');
-            return view('auth.reset-password', [
-                'token' => $token,
-                'email' => $email,
-        ]);
-    })->name('password.reset');
-    Route::post('/reset-password', [ResetController::class, 'reset'])->name('password.update');
-// =================================================================================================================================
-
-
-
-// =================================================================================================================================
-//                                                      ROUTE KARYAWAN
-// =================================================================================================================================
-    Route::middleware(['auth', 'karyawan', 'product.limit'])->group(function () {
-        Route::get('/item',             [ItemController::class, 'index'])->name('items.index');
-        Route::get('/item/{encrypted}', [KaryawanController::class, 'show'])->name('karyawan.show');
-        });
-
-    Route::get('/proxy/image',                      [KaryawanController::class, 'proxyImage'])->name('proxy.image');
-    Route::get('/karyawan/{encrypted}/export-pdf',  [KaryawanController::class, 'exportPdf'])->name('karyawan.exportPdf');
-    Route::get('/karyawan/{id}/price',              [KaryawanController::class, 'getPrice']);
-    Route::get('/branches',                         [KaryawanController::class, 'getBranches']);
-    Route::get('/items/export-pdf',                 [ItemController::class, 'exportPdf1'])->name('items.exportPdf');
-    Route::get('/items/export-excel',               [ItemController::class, 'exportExcel1'])->name('items.excel');
-    
-    // AJAX-KARYAWAN
-    Route::get('/ajax/warehouse-stock',             [KaryawanController::class, 'getWarehouseStock'])->name('ajax.warehouse.stock');
-    Route::get('/ajax/item-image',                  [KaryawanController::class, 'getItemImage'])->name('ajax.item.image');
-    Route::get('/ajax/price',                       [ItemController::class, 'ajaxPrice'])->name('ajax.price');
-    // =================================================================================================================================
-    
-    
-    // =================================================================================================================================
-    //                                                        ROUTE ADMIN
-// =================================================================================================================================
-Route::middleware(['auth', 'admin'])->group(function () {
-        Route::get('/admin/detail/{encrypted}',      [AdminController::class, 'showItems'])->name('admin.detail');
-        Route::get('/admin/item',            [AdminController::class, 'indexItems'])->name('admin.items');
-        Route::get('/admin-dashboard',       [AdminController::class, 'index'])->name('admin.index');
-        Route::get('/admin-user',            [AdminController::class, 'viewUser'])->name('admin.user');
-        Route::get('/admin-log',             [AdminController::class, 'logActivity'])->name('admin.log');    
-        Route::get('/admin/log/user-search', [AdminController::class, 'searchUser'])->name('admin.log.user-search');
-        Route::post('/auto-logout',          [AdminController::class, 'autoLogout'])->name('auto.logout');
-        
-        Route::get('/admin/users',           [UserController::class, 'index'])->name('users2.index');
-        Route::get('/admin/users/create',    [UserController::class, 'create'])->name('users2.create');
-        Route::post('/admin/users',          [UserController::class, 'store'])->name('users2.store');
-        Route::get('/admin/users/{id}/edit', [UserController::class, 'edit'])->name('users2.edit');
-        Route::put('/admin/users/{id}',      [UserController::class, 'update'])->name('users2.update');
-        Route::delete('/admin/users/{id}',   [UserController::class, 'destroy'])->name('users2.destroy');
-        
-        // (Sudah ada) Accurate Accounts & mapping — biarkan seperti sebelumnya
-        Route::get('/admin/accurate-accounts',              [AccurateAccountController::class, 'index'])->name('aa.index');
-        Route::get('/admin/accurate-accounts/create',       [AccurateAccountController::class, 'create'])->name('aa.create');
-        Route::post('/admin/accurate-accounts',             [AccurateAccountController::class, 'store'])->name('aa.store');
-        Route::get('/admin/accurate-accounts/{id}/edit',    [AccurateAccountController::class, 'edit'])->name('aa.edit');
-        Route::put('/admin/accurate-accounts/{id}',         [AccurateAccountController::class, 'update'])->name('aa.update');
-        Route::delete('/admin/accurate-accounts/{id}',      [AccurateAccountController::class, 'destroy'])->name('aa.destroy');    
-        
-        Route::get('/users/create', [AdminController::class, 'create'])->name('users.create');
-        Route::post('/users',       [AdminController::class, 'store'])->name('users.post');
-        Route::get('/users/{id}',   [AdminController::class, 'show'])->name('users.show');
-    });
-// =================================================================================================================================
-
-Route::middleware('auth')->group(function () {
-    Route::get('/katalog', [CustomerController::class, 'index'])->name('katalog.items');
+/*
+|--------------------------------------------------------------------------
+| AUTH
+|--------------------------------------------------------------------------
+*/
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthinticationController::class, 'index'])->name('auth.login');
+    Route::post('/login', [AuthinticationController::class, 'login'])->name('auth.login.post');
 });
 
+Route::post('/logout', [AuthinticationController::class, 'logout'])
+    ->middleware('auth')
+    ->name('logout');
 
-// =================================================================================================================================
-//                                                       ROUTE RESELLER
-// =================================================================================================================================
-    Route::get('/reseller',             [ResellerController::class, 'index2'])->name('reseller.index');
-    Route::get('/reseller/test',        [ResellerController::class, 'index'])->name('reseller.test');
+/*
+|--------------------------------------------------------------------------
+| RESET PASSWORD (GABUNG & HILANGKAN DUPLIKAT)
+|--------------------------------------------------------------------------
+*/
+Route::controller(ResetPasswordController::class)->group(function () {
+    Route::get('/forgot-password', 'showForgotForm')->name('password.request');
+    Route::post('/forgot-password', 'sendOtp')->name('password.email');
+
+    Route::post('/resend-otp', 'resendOtp');
+    Route::get('/verify-otp', 'showVerifyForm');
+    Route::post('/verify-otp', 'verifyOtp');
+
+    Route::get('/reset-password', 'showResetForm');
+    Route::post('/reset-password', 'resetPassword')->name('password.update');
+});
+
+/*
+|--------------------------------------------------------------------------
+| AUTH REQUIRED (UMUM)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth')->group(function () {
+
+    Route::get('/katalog', [CustomerController::class, 'index'])->name('katalog.items');
+
+    // LIST
+    Route::get('/list', [ListController::class, 'index']);
+    Route::get('/list/search', [ListController::class, 'search']);
+    Route::post('/list/add', [ListController::class, 'add']);
+    Route::post('/list/clear', [ListController::class, 'clear']);
+    Route::post('/list/remove', [ListController::class, 'remove']);
+    Route::get('/list/pdf', [ListController::class, 'pdf']);
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| KARYAWAN
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'karyawan'])->group(function () {
+
+    Route::get('/item', [ItemController::class, 'index'])->name('items.index');
+    Route::get('/item/{encrypted}', [KaryawanController::class, 'show'])->name('karyawan.show');
+
+    Route::get('/karyawan/{encrypted}/export-pdf', [KaryawanController::class, 'exportPdf'])->name('karyawan.exportPdf');
+    Route::get('/karyawan/{id}/price', [KaryawanController::class, 'getPrice']);
+
+    // AJAX
+    Route::get('/ajax/item-image', [KaryawanController::class, 'getItemImage'])->name('ajax.item.image');
+    Route::get('/ajax/price', [ItemController::class, 'ajaxPrice'])->name('ajax.price');
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'admin'])->group(function () {
+
+    Route::get('/admin-dashboard', [AdminController::class, 'index'])->name('admin.index');
+
+    Route::get('/admin/item', [AdminController::class, 'indexItems'])->name('admin.items');
+    Route::get('/admin/detail/{encrypted}', [AdminController::class, 'showItems'])->name('admin.detail');
+
+    Route::get('/admin-user', [AdminController::class, 'viewUser'])->name('admin.user');
+    Route::get('/admin-log', [AdminController::class, 'logActivity'])->name('admin.log');
+    Route::get('/admin/log/user-search', [AdminController::class, 'searchUser'])->name('admin.log.user-search');
+
+    Route::post('/auto-logout', [AdminController::class, 'autoLogout'])->name('auto.logout');
+
+    // USER CRUD
+    Route::get('/admin/users', [UserController::class, 'index'])->name('users2.index');
+    Route::get('/admin/users/create', [UserController::class, 'create'])->name('users2.create');
+    Route::post('/admin/users', [UserController::class, 'store'])->name('users2.store');
+    Route::get('/admin/users/{id}/edit', [UserController::class, 'edit'])->name('users2.edit');
+    Route::put('/admin/users/{id}', [UserController::class, 'update'])->name('users2.update');
+    Route::delete('/admin/users/{id}', [UserController::class, 'destroy'])->name('users2.destroy');
+
+    // ACCURATE
+    Route::get('/admin/accurate-accounts', [AccurateAccountController::class, 'index'])->name('aa.index');
+    Route::get('/admin/accurate-accounts/create', [AccurateAccountController::class, 'create'])->name('aa.create');
+    Route::post('/admin/accurate-accounts', [AccurateAccountController::class, 'store'])->name('aa.store');
+    Route::get('/admin/accurate-accounts/{id}/edit', [AccurateAccountController::class, 'edit'])->name('aa.edit');
+    Route::put('/admin/accurate-accounts/{id}', [AccurateAccountController::class, 'update'])->name('aa.update');
+    Route::delete('/admin/accurate-accounts/{id}', [AccurateAccountController::class, 'destroy'])->name('aa.destroy');
+
+    // EXTRA USERS
+    Route::get('/users/create', [AdminController::class, 'create'])->name('users.create');
+    Route::post('/users', [AdminController::class, 'store'])->name('users.post');
+    Route::get('/users/{id}', [AdminController::class, 'show'])->name('users.show');
+
+    // GALERI & SIMULASI
+    Route::get("/admin/simulasi/rakit-pc", [AdminController::class, 'indexRakitPc'])->name('admin.simulasi.rakitpc');
+    Route::get("/admin/simulasi/rakit-cctv", [AdminController::class, 'indexRakitCctv'])->name('admin.simulasi.rakitcctv');
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| RESELLER
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'reseller'])->group(function () {
+
+    Route::get('/reseller', [ResellerController::class, 'index2'])->name('reseller.index');
+    Route::get('/reseller/test', [ResellerController::class, 'index'])->name('reseller.test');
     Route::get('/reseller/{encrypted}', [ResellerController::class, 'show'])->name('reseller.detail');
 
-    // AJAX-RESELLER
-    Route::get('/ajax/priceReseller',   [ResellerController::class, 'ajaxPriceReseller'])->name('ajax.price.reseller');
-// =================================================================================================================================
+    Route::get('/ajax/priceReseller', [ResellerController::class, 'ajaxPriceReseller'])->name('ajax.price.reseller');
+});
+
+/*
+|--------------------------------------------------------------------------
+| PUBLIC (TANPA AUTH - BIARKAN SESUAI ASLI)
+|--------------------------------------------------------------------------
+*/
+Route::get('/ajax/warehouse-stock', [KaryawanController::class, 'getWarehouseStock'])->name('ajax.warehouse.stock');
+Route::get('/proxy/image', [KaryawanController::class, 'proxyImage'])->name('proxy.image');
+Route::get('/branches', [KaryawanController::class, 'getBranches']);
+Route::get('/items/export-pdf', [ItemController::class, 'exportPdf1'])->name('items.exportPdf');
+Route::get('/items/export-excel', [ItemController::class, 'exportExcel1'])->name('items.excel');
 
 
+Route::get('/purchase-invoice', [SecondProductController::class, 'invoiceIndex'])->name('invoiceIndex');
+Route::get('/purchase-invoice/detail', [SecondProductController::class, 'getDetailPurchaseInvoice'])->name('getInvoice');
 
-// =================================================================================================================================
-//                                                        SISTEM ANTRIAN
-// =================================================================================================================================
-    Route::get('/queue-number', function () {
-        
-        // Ambil nomor terakhir + 1
-        $queue = Cache::get('login_queue', 0) + 1;
-        
-        // Simpan kembali, reset tiap 60 detik
-        Cache::put('login_queue', $queue, 60);
-        
-        // Simpan di session user
-        session(['queue_number' => $queue]);
-        
-        return redirect()->route('wait.page');
-    })->name('queue.number');
+Route::post('/second-products/store', [SecondProductController::class, 'store']);
+Route::get('/branch', [SecondProductController::class, 'getBranch']);
+Route::get('/warehouse', [SecondProductController::class, 'getWarehouse']);
+Route::get('/customer', [SecondProductController::class, 'getCustomer']);
 
-    Route::get('/wait', function () {
-        return view('wait-page');
-    })->name('wait.page');
+Route::get(
+    '/second-products/{id}/edit',
+    [SecondProductController::class, 'edit']
+)->name('second.edit');
 
-    // setelah selesai wait
-    Route::get('/wait/continue', function () {
-        session(['wait_passed' => true]);
-        if (Auth::user()->status === 'KARYAWAN') {
-            return redirect()->intended('/item');
-        }
-        if (Auth::user()->status === 'RESELLER') {
-            return redirect()->intended('/reseller');
-        }
-        if (Auth::user()->status === 'USER') {
-            return redirect()->intended('/katalog');
-        }
-    })->name('wait.continue');
-// =================================================================================================================================
+Route::get(
+    '/second-products',
+    [SecondProductController::class, 'index']
+)->name('second.index');
 
+Route::put(
+    '/second-products/{id}',
+    [SecondProductController::class, 'update']
+)->name('second.update');
 
+Route::delete('/second-products/{id}', [SecondProductController::class, 'destroy'])->name('second.destroy');
+Route::get('/second-products/{id}/show', [SecondProductController::class, 'show'])->name('second.show');
+Route::patch('/second-products/{id}/status', [SecondProductController::class, 'updateStatus'])->name('second.updateStatus');
 
-Route::get('/forgot-password', [ResetPasswordController::class, 'showForgotForm'])->name('showForgotForm');
-Route::post('/forgot-password', [ResetPasswordController::class, 'sendOtp']);
+Route::get('/daftar-product', [SecondProductController::class, 'daftarProduct'])->name('second.product');
+Route::post('/second/{id}/keep', [SecondProductController::class, 'keep'])->name('second.keep');
 
-Route::post('/resend-otp', [ResetPasswordController::class, 'resendOtp']);
-Route::get('/verify-otp', [ResetPasswordController::class, 'showVerifyForm']);
-Route::post('/verify-otp', [ResetPasswordController::class, 'verifyOtp']);
-
-Route::get('/reset-password', [ResetPasswordController::class, 'showResetForm']);
-Route::post('/reset-password', [ResetPasswordController::class, 'resetPassword']);
-
-
-Route::get('/list', [ListController::class, 'index']);
-Route::get('/list/search', [ListController::class, 'search']);
-Route::post('/list/add', [ListController::class, 'add']);
-Route::post('/list/clear', [ListController::class, 'clear']);
-Route::post('/list/remove', [ListController::class, 'remove']);
-Route::get('/list/pdf', [ListController::class, 'pdf']);
-
-
-Route::get("/admin/simulasi/rakit-pc", [AdminController::class, 'indexRakitPc'])->name('admin.simulasi.rakitpc');
-Route::get("/admin/simulasi/rakit-cctv", [AdminController::class, 'indexRakitCctv'])->name('admin.simulasi.rakitcctv');
-Route::get("/admin/galeri", [GaleriController::class, 'index'])->name('admin.galeri.index');
-
-Route::get("/admin/galeri/list", [GaleriController::class, 'getItems'])->name('admin.galeri.getItems');
-Route::get("/admin/galeri/sn", [GaleriController::class, 'getSn'])->name('admin.galeri.getSn');
+Route::get('/cart', [OrderController::class, 'index'])->name('cart.index');
+Route::get('/checkout', [OrderController::class, 'checkout'])
+    ->name('checkout');

@@ -17,6 +17,7 @@
         "laravel/tinker": "^2.8",
         "livewire/flux": "^2.2",
         "maatwebsite/excel": "^3.1",
+        "silviolleite/laravelpwa": "^2.0",
         "spatie/laravel-activitylog": "^4.10",
         "swoole/ide-helper": "^6.0",
         "vinkla/hashids": "^11.0"
@@ -76,10 +77,5 @@
     },
     "minimum-stability": "stable",
     "prefer-stable": true,
-    "repositories": {
-        "flux-pro": {
-            "type": "composer",
-            "url": "https://composer.fluxui.dev"
-        }
-    }
+    "repositories": {}
 }

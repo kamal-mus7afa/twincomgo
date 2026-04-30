@@ -1,9 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\TestController;
+use App\Http\Controllers\UploadController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,3 +24,5 @@ Route::get('/test', [TestController::class, 'index']);
 Route::get('/category', [TestController::class, 'getCategory']);
 Route::get('/items', [ItemController::class, 'index']);
 Route::get('/price', [ItemController::class, 'ajaxPrice']);
+
+Route::post('/upload', [UploadController::class, 'upload']);

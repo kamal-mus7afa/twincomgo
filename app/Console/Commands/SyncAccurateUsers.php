@@ -182,7 +182,7 @@ class SyncAccurateUsers extends Command
                 'name' => 'Administrator',
                 'email' => 'admin@gmail.com',
                 'password' => bcrypt('twincom@123'),
-                'status' => 'ADMIN'
+                'status' => 'admin'
             ]);
 
             $newUsers++;

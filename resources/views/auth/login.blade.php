@@ -1,413 +1,448 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="{{ asset('images/tw.png') }}" type="image/png">
-    <title>Twincomgo | Login</title>
-    
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" href="{{ asset('images/tw.png') }}" type="image/png">
+        <title>Twincomgo | Login</title>
+        <link rel="icon" href="{{ asset('images/tw.png') }}" type="image/png">
+        @laravelPWA
+        <!-- Chrome for Android theme color -->
+        <meta name="theme-color" content="#000000">
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
+        <!-- Add to homescreen for Chrome on Android -->
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="application-name" content="PWA">
+        <link rel="icon" sizes="512x512" href="/images/icons/web-app-manifest-192x192.png">
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-
-
-    <style>
-       :root {
-            --primary: #0d9488;
-            --primary-dark: #0f766e;
-            --primary-darker: #115e59;
-            --secondary: #64748b;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --dark: #1e293b;
-            --light: #f8fafc;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Background Elements */
-        .bg-shapes {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
-        }
-
-        .shape {
-            position: absolute;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            opacity: 0.1;
-        }
-
-        .shape-1 {
-            width: 300px;
-            height: 300px;
-            top: -100px;
-            left: -100px;
-        }
-
-        .shape-2 {
-            width: 200px;
-            height: 200px;
-            bottom: -50px;
-            right: -50px;
-        }
-
-        .shape-3 {
-            width: 150px;
-            height: 150px;
-            top: 50%;
-            right: 10%;
-        }
+        <!-- Add to homescreen for Safari on iOS -->
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <meta name="apple-mobile-web-app-title" content="PWA">
+        <link rel="apple-touch-icon" href="/images/icons/web-app-manifest-192x192.png">
 
 
-        .card.login-card {
-            max-width: 1000px;
-            width: 100%;
-            box-shadow: 10px 10px 15px rgba(0, 0, 0, 0.3);
-            border: none;
-        }
+        <!-- Tile for Win8 -->
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="/images/icons/web-app-manifest-192x192.png">
+        
 
-        .login-image {
-            background-size: cover;
-            background-position: center;
-            min-height: 100%;
-            background: #fff;
-        }
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
 
-        .form-side {
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .input {
-            line-height: 28px;
-            border: 2px solid transparent;
-            border-bottom-color: #777;
-            padding: .2rem 0;
-            outline: none;
-            background-color: transparent;
-            color: #0d0c22;
-            transition: .3s cubic-bezier(0.645, 0.045, 0.355, 1);
-        }
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-        .input:focus, .input:hover {
-            outline: none;
-            padding: .2rem 1rem;
-            border-radius: 1rem;
-            border-color: #7a9cc6;
-        }
 
-        .input::placeholder {
-            color: #777;
-        }
 
-        .input:focus::placeholder {
-            opacity: 0;
-            transition: opacity .3s;
-        }
+        <style>
+        :root {
+                --primary: #0d9488;
+                --primary-dark: #0f766e;
+                --primary-darker: #115e59;
+                --secondary: #64748b;
+                --success: #10b981;
+                --warning: #f59e0b;
+                --danger: #ef4444;
+                --dark: #1e293b;
+                --light: #f8fafc;
+            }
 
-        .password-wrapper {
-    position: relative;
-}
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
 
-.toggle-password {
-    position: absolute;
-    top: 73%;
-    right: 15px;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #777;
-    font-size: 16px;
-}
+            body {
+                font-family: 'Inter', sans-serif;
+                background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                overflow: hidden;
+            }
 
-.toggle-password:hover {
-    color: #7a9cc6;
-}
-        /* From Uiverse.io by cssbuttons-io */ 
-        .c-button {
-            color: #000;
-            font-weight: 700;
-            font-size: 16px;
-            text-decoration: none;
-            padding: 0.4em 1.1em;
-            cursor: pointer;
-            display: inline-block;
-            vertical-align: middle;
-            position: relative;
-            z-index: 1;
-        }
+            /* Background Elements */
+            .bg-shapes {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: -1;
+                overflow: hidden;
+            }
 
-        .c-button--gooey {
-            color: #0649d9;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            border: 2px solid #0649d9;
-            border-radius: 10px;
-            position: relative;
-            transition: all 700ms ease;
-        }
+            .shape {
+                position: absolute;
+                border-radius: 50%;
+                background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+                opacity: 0.1;
+            }
 
-        .c-button--gooey .c-button__blobs {
-            height: 100%;
-            filter: url(#goo);
-            overflow: hidden;
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: -3px;
-            right: -1px;
-            z-index: -1;
-        }
+            .shape-1 {
+                width: 300px;
+                height: 300px;
+                top: -100px;
+                left: -100px;
+            }
 
-        .c-button--gooey .c-button__blobs div {
-            background-color: #0649d9;
-            width: 34%;
-            height: 100%;
-            border-radius: 100%;
-            position: absolute;
-            transform: scale(1.4) translateY(125%) translateZ(0);
-            transition: all 700ms ease;
-        }
+            .shape-2 {
+                width: 200px;
+                height: 200px;
+                bottom: -50px;
+                right: -50px;
+            }
 
-        .c-button--gooey .c-button__blobs div:nth-child(1) {
-            left: -5%;
-        }
+            .shape-3 {
+                width: 150px;
+                height: 150px;
+                top: 50%;
+                right: 10%;
+            }
 
-        .c-button--gooey .c-button__blobs div:nth-child(2) {
-            left: 30%;
-            transition-delay: 60ms;
-        }
 
-        .c-button--gooey .c-button__blobs div:nth-child(3) {
-        left: 66%;
-        transition-delay: 25ms;
-        }
+            .card.login-card {
+                max-width: 1000px;
+                width: 100%;
+                box-shadow: 10px 10px 15px rgba(0, 0, 0, 0.3);
+                border: none;
+            }
 
-        .c-button--gooey:hover {
-        color: #fff;
-        }
+            .login-image {
+                background-size: cover;
+                background-position: center;
+                min-height: 100%;
+                background: #fff;
+            }
 
-        .c-button--gooey:hover .c-button__blobs div {
-        transform: scale(1.4) translateY(0) translateZ(0);
-}
-    </style>
-</head>
-<body>
-    {{-- Background Shapes --}}
-    <div class="bg-shapes">
-        <div class="shape shape-1"></div>
-        <div class="shape shape-2"></div>
-        <div class="shape shape-3"></div>
-    </div>
-    
-    <div id="loader-display" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0, 0, 0, 0.377); z-index:1050; display:flex; justify-content:center; align-items:center;">
-        <dotlottie-wc
-        src="https://lottie.host/bfcdecd5-f791-4410-a25e-4e1ac854a90d/b6lBLjfRT3.json"
-        style="width: 100%; max-width: 300px; height: auto; display: block; margin: auto;"
-        speed="1"
-        autoplay
-        loop
-        ></dotlottie-wc>
-    </div>
-    <div class="container-fluid d-flex align-items-center justify-content-center vh-100">        
-        <div class="card login-card p-2">
-            <div class="row g-0" style="min-height: 450px;">
-                @if (session('loginGagal'))
-                    <div class="alert alert-warning">
-                        {{ session('loginGagal') }}
-                    </div>
-                @endif
-                <!-- Kolom kiri: Gambar -->
-                <div class="col-md-6 d-none d-md-block login-image d-flex align-items-center justify-content-center" style="background-color: #ffffff;">
-                    <dotlottie-wc
-                    src="https://lottie.host/84e03c2a-1407-41ba-b04e-cc6e3a140915/MSHr2gOVGR.json"
-                    style="max-width: 1000px; width: 100%; height: 100%;"
-                    speed="1"
-                    autoplay
-                    loop
-                    ></dotlottie-wc>
-                </div>
+            .form-side {
+                padding: 40px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            .input {
+                line-height: 28px;
+                border: 2px solid transparent;
+                border-bottom-color: #777;
+                padding: .2rem 0;
+                outline: none;
+                background-color: transparent;
+                color: #0d0c22;
+                transition: .3s cubic-bezier(0.645, 0.045, 0.355, 1);
+            }
 
-                <!-- Kolom kanan: Form -->
-                <div class="col-md-6 form-side">
-                    <p class="text-center">
-                        <img src="{{asset('images/logo-hijau-tua.png')}}" alt="Logo SISB" style="width: 200px">
-                    </p>
-                    <h4 class="text-center mb-6"><strong>SISTEM INFORMASI
-                        <br> STOK BARANG</strong></h4>
-                    @if (session('status'))
-                        <div class="alert alert-success">
-                            {{ session('status') }}
+            .input:focus, .input:hover {
+                outline: none;
+                padding: .2rem 1rem;
+                border-radius: 1rem;
+                border-color: #7a9cc6;
+            }
+
+            .input::placeholder {
+                color: #777;
+            }
+
+            .input:focus::placeholder {
+                opacity: 0;
+                transition: opacity .3s;
+            }
+
+            .password-wrapper {
+        position: relative;
+    }
+
+    .toggle-password {
+        position: absolute;
+        top: 73%;
+        right: 15px;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #777;
+        font-size: 16px;
+    }
+
+    .toggle-password:hover {
+        color: #7a9cc6;
+    }
+            /* From Uiverse.io by cssbuttons-io */ 
+            .c-button {
+                color: #000;
+                font-weight: 700;
+                font-size: 16px;
+                text-decoration: none;
+                padding: 0.4em 1.1em;
+                cursor: pointer;
+                display: inline-block;
+                vertical-align: middle;
+                position: relative;
+                z-index: 1;
+            }
+
+            .c-button--gooey {
+                color: #0649d9;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                border: 2px solid #0649d9;
+                border-radius: 10px;
+                position: relative;
+                transition: all 700ms ease;
+            }
+
+            .c-button--gooey .c-button__blobs {
+                height: 100%;
+                filter: url(#goo);
+                overflow: hidden;
+                position: absolute;
+                top: 0;
+                left: 0;
+                bottom: -3px;
+                right: -1px;
+                z-index: -1;
+            }
+
+            .c-button--gooey .c-button__blobs div {
+                background-color: #0649d9;
+                width: 34%;
+                height: 100%;
+                border-radius: 100%;
+                position: absolute;
+                transform: scale(1.4) translateY(125%) translateZ(0);
+                transition: all 700ms ease;
+            }
+
+            .c-button--gooey .c-button__blobs div:nth-child(1) {
+                left: -5%;
+            }
+
+            .c-button--gooey .c-button__blobs div:nth-child(2) {
+                left: 30%;
+                transition-delay: 60ms;
+            }
+
+            .c-button--gooey .c-button__blobs div:nth-child(3) {
+            left: 66%;
+            transition-delay: 25ms;
+            }
+
+            .c-button--gooey:hover {
+            color: #fff;
+            }
+
+            .c-button--gooey:hover .c-button__blobs div {
+            transform: scale(1.4) translateY(0) translateZ(0);
+    }
+        </style>
+    </head>
+    <body>
+        {{-- Background Shapes --}}
+        <div class="bg-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
+        
+        <div id="loader-display" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0, 0, 0, 0.377); z-index:1050; display:flex; justify-content:center; align-items:center;">
+            <dotlottie-wc
+            src="https://lottie.host/bfcdecd5-f791-4410-a25e-4e1ac854a90d/b6lBLjfRT3.json"
+            style="width: 100%; max-width: 300px; height: auto; display: block; margin: auto;"
+            speed="1"
+            autoplay
+            loop
+            ></dotlottie-wc>
+        </div>
+        <div class="container-fluid d-flex align-items-center justify-content-center vh-100">        
+            <div class="card login-card p-2">
+                <div class="row g-0" style="min-height: 450px;">
+                    @if (session('loginGagal'))
+                        <div class="alert alert-warning">
+                            {{ session('loginGagal') }}
                         </div>
                     @endif
+                    <!-- Kolom kiri: Gambar -->
+                    <div class="col-md-6 d-none d-md-block login-image d-flex align-items-center justify-content-center" style="background-color: #ffffff;">
+                        <dotlottie-wc
+                        src="https://lottie.host/84e03c2a-1407-41ba-b04e-cc6e3a140915/MSHr2gOVGR.json"
+                        style="max-width: 1000px; width: 100%; height: 100%;"
+                        speed="1"
+                        autoplay
+                        loop
+                        ></dotlottie-wc>
+                    </div>
 
-                    <form method="POST" action="{{route('auth.login.post')}}">
-                        @csrf
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control input" id="email" name="email" required placeholder="Masukkan Email">
-                        </div>
+                    <!-- Kolom kanan: Form -->
+                    <div class="col-md-6 form-side">
+                        <p class="text-center">
+                            <img src="{{asset('images/logo-hijau-tua.png')}}" alt="Logo SISB" style="width: 200px">
+                        </p>
+                        <h4 class="text-center mb-6"><strong>SISTEM INFORMASI
+                            <br> STOK BARANG</strong></h4>
+                        @if (session('status'))
+                            <div class="alert alert-success">
+                                {{ session('status') }}
+                            </div>
+                        @endif
 
-                        <div class="mb-2 password-wrapper">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control input" id="password" name="password" required placeholder="Masukkan Password">
-                            <span class="toggle-password">
-                                <i class="fa fa-eye"></i>
-                            </span>
-                        </div>
-                        <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="remember" id="remember" 
-                                    {{ old('remember') ? 'checked' : '' }}>
-                                <label class="form-check-label" for="remember">
-                                    Ingat Saya
-                                </label>
+                        <form method="POST" action="{{route('auth.login.post')}}">
+                            @csrf
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control input" id="email" name="email" required placeholder="Masukkan Email">
                             </div>
-                        <div class="text-end mt-3">
-                            <small><a href="{{ route('showForgotForm') }}" style="text-decoration: none">Lupa password?</a></small>
-                        </div>
-                        <div class="d-grid mt-4">
-                            {{-- <button type="submit" class="btn btn-primary">Login</button> --}}
-                            <button class="c-button c-button--gooey" type="submit"> Login
-                            <div class="c-button__blobs">
-                            <div></div>
-                            <div></div>
-                            <div></div>
+
+                            <div class="mb-2 password-wrapper">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control input" id="password" name="password" required placeholder="Masukkan Password">
+                                <span class="toggle-password">
+                                    <i class="fa fa-eye"></i>
+                                </span>
                             </div>
-                            </button>
-                            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" style="display: block; height: 0; width: 0;">
-                            <defs>
-                                <filter id="goo">
-                                <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur"></feGaussianBlur>
-                                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo"></feColorMatrix>
-                                <feBlend in="SourceGraphic" in2="goo"></feBlend>
-                                </filter>
-                            </defs>
-                            </svg>
-                        </div>                       
-                    </form>
+                            <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="remember" id="remember" 
+                                        {{ old('remember') ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="remember">
+                                        Ingat Saya
+                                    </label>
+                                </div>
+                            <div class="text-end mt-3">
+                                <small><a href="{{ route('password.request') }}" style="text-decoration: none">Lupa password?</a></small>
+                            </div>
+                            <div class="d-grid mt-4">
+                                {{-- <button type="submit" class="btn btn-primary">Login</button> --}}
+                                <button class="c-button c-button--gooey" type="submit"> Login
+                                <div class="c-button__blobs">
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                </div>
+                                </button>
+                                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" style="display: block; height: 0; width: 0;">
+                                <defs>
+                                    <filter id="goo">
+                                    <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur"></feGaussianBlur>
+                                    <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo"></feColorMatrix>
+                                    <feBlend in="SourceGraphic" in2="goo"></feBlend>
+                                    </filter>
+                                </defs>
+                                </svg>
+                            </div>                       
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+
+        <script type="text/javascript">
+            // Initialize the service worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/serviceworker.js', {
+                    scope: '/'
+                }).then(function (registration) {
+                    // Registration was successful
+                    console.log('Laravel PWA: ServiceWorker registration successful with scope: ', registration.scope);
+                }, function (err) {
+                    // registration failed :(
+                    console.log('Laravel PWA: ServiceWorker registration failed: ', err);
+                });
+            }
+        </script>
 
 
-    <script>
-        document.querySelectorAll('.toggle-password').forEach(toggle => {
-    toggle.addEventListener('click', function () {
-        const input = this.previousElementSibling;
-        const icon = this.querySelector('i');
+        <script>
+            document.querySelectorAll('.toggle-password').forEach(toggle => {
+        toggle.addEventListener('click', function () {
+            const input = this.previousElementSibling;
+            const icon = this.querySelector('i');
 
-        if (input.type === "password") {
-            input.type = "text";
-            icon.classList.replace("fa-eye", "fa-eye-slash");
-        } else {
-            input.type = "password";
-            icon.classList.replace("fa-eye-slash", "fa-eye");
-        }
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.replace("fa-eye", "fa-eye-slash");
+            } else {
+                input.type = "password";
+                icon.classList.replace("fa-eye-slash", "fa-eye");
+            }
+        });
     });
-});
-    </script>
-    <script>
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        });
+        </script>
+        <script>
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
 
-        // Show loader on page unload (navigation or reload)
-        window.addEventListener('beforeunload', function () {
-            const loader = document.getElementById('loader-display');
-            if (loader) {
-                loader.style.display = 'flex';
-            }
-        });
+            // Show loader on page unload (navigation or reload)
+            window.addEventListener('beforeunload', function () {
+                const loader = document.getElementById('loader-display');
+                if (loader) {
+                    loader.style.display = 'flex';
+                }
+            });
 
-        // Hide loader on page load
-        window.addEventListener('load', function () {
-            const loader = document.getElementById('loader-display');
-            if (loader) {
-                loader.style.display = 'none';
-            }
-        });
-
-        // Hide loader on pageshow (including when coming back from bfcache)
-        window.addEventListener('pageshow', function (event) {
-            if (event.persisted) {
+            // Hide loader on page load
+            window.addEventListener('load', function () {
                 const loader = document.getElementById('loader-display');
                 if (loader) {
                     loader.style.display = 'none';
                 }
-            }
-        });
-    </script>
+            });
 
-    <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.6.2/dist/dotlottie-wc.js" type="module"></script>
-    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-
-    @if (session('logoutSuccess'))
-        <script>
-            Toastify({
-                text: "{{ session('logoutSuccess') }}",
-                duration: 5000,
-                gravity: "top", // top or bottom
-                position: "center", // left, center or right
-                backgroundColor: "#ff0000", // warna hijau sukses
-                stopOnFocus: true, 
-            }).showToast();
+            // Hide loader on pageshow (including when coming back from bfcache)
+            window.addEventListener('pageshow', function (event) {
+                if (event.persisted) {
+                    const loader = document.getElementById('loader-display');
+                    if (loader) {
+                        loader.style.display = 'none';
+                    }
+                }
+            });
         </script>
-    @endif
 
-    @if (session('loginError'))
-        <script>
-            Toastify({
-                text: "{{ session('loginError') }}",
-                duration: 5000,
-                gravity: "top", // top or bottom
-                position: "center", // left, center or right
-                backgroundColor: "#ffa500", // warna hijau sukses
-                stopOnFocus: true, 
-            }).showToast();
-        </script>
-    @endif
+        <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.6.2/dist/dotlottie-wc.js" type="module"></script>
+        <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
-    @if (session('success'))
-        <script>
-            Toastify({
-                text: "{{ session('success') }}",
-                duration: 5000,
-                gravity: "top",
-                position: "center",
-                backgroundColor: "#10b981", // hijau sukses
-                stopOnFocus: true,
-            }).showToast();
-        </script>
-    @endif
+        @if (session('logoutSuccess'))
+            <script>
+                Toastify({
+                    text: "{{ session('logoutSuccess') }}",
+                    duration: 5000,
+                    gravity: "top", // top or bottom
+                    position: "center", // left, center or right
+                    backgroundColor: "#ff0000", // warna hijau sukses
+                    stopOnFocus: true, 
+                }).showToast();
+            </script>
+        @endif
 
-</body>
-</html>
+        @if (session('loginError'))
+            <script>
+                Toastify({
+                    text: "{{ session('loginError') }}",
+                    duration: 5000,
+                    gravity: "top", // top or bottom
+                    position: "center", // left, center or right
+                    backgroundColor: "#ffa500", // warna hijau sukses
+                    stopOnFocus: true, 
+                }).showToast();
+            </script>
+        @endif
+
+        @if (session('success'))
+            <script>
+                Toastify({
+                    text: "{{ session('success') }}",
+                    duration: 5000,
+                    gravity: "top",
+                    position: "center",
+                    backgroundColor: "#10b981", // hijau sukses
+                    stopOnFocus: true,
+                }).showToast();
+            </script>
+        @endif
+
+    </body>
+    </html>

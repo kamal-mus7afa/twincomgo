@@ -39,4 +39,9 @@ return [
         'base_api'      => 'https://odin.accurate.id/accurate/api',
     ],
 
+    'supabase' => [
+        'url' => env('SUPABASE_URL'),
+        'bucket' => env('SUPABASE_BUCKET'),
+    ],
+
 ];

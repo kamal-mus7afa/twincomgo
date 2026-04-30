@@ -276,13 +276,102 @@
             <h5 class="fw-bold mb-3">
                 <i class="bi bi-journal-text me-1"></i> Selling Point
             </h5>
-
+            
             <div class="text-secondary" style="font-size: 16px;">
                 {!! nl2br(e($note)) !!}
             </div>
         </div>
         @endif
     </div>
+    @if($snList->isNotEmpty())
+        <div class="mt-4">
+            <h5 class="mb-3">Gambar barang perSN</h5>
+
+            <div class="row">
+                @foreach ($snList as $sn)
+                    <div class="col-md-4 col-lg-3 mb-4">
+                        {{-- Container dengan posisi relative untuk tag yang menjorok --}}
+                        <div class="position-relative">
+                            
+                            {{-- TAG READY di pojok KANAN luar card (nempel/menjorok) --}}
+                            @if($sn->status === 'unkeep')
+                                <div class="position-absolute top-0 end-0 z-3" style="transform: translate(10%, -30%);">
+                                    <span class="badge bg-success px-3 py-2 rounded-pill shadow-lg fs-6 fw-bold">
+                                        ✅ Tersedia
+                                    </span>
+                                </div>
+                            @endif
+
+                            {{-- CARD --}}
+                            <div class="card h-100 shadow-sm rounded-3 overflow-hidden">
+                                @if($sn->images && $sn->images->count())
+                                    <div id="carousel-{{ $sn->id }}" class="carousel slide" data-bs-ride="carousel">
+                                        
+                                        <div class="carousel-inner">
+                                            @foreach($sn->images as $key => $img)
+                                                <div class="carousel-item {{ $key == 0 ? 'active' : '' }}">
+                                                    <img src="{{ $img->url }}" 
+                                                        class="d-block w-100"
+                                                        style="height:180px; object-fit:cover;">
+                                                </div>
+                                            @endforeach
+                                        </div>
+
+                                        {{-- tombol kiri --}}
+                                        <button class="carousel-control-prev" type="button" data-bs-target="#carousel-{{ $sn->id }}" data-bs-slide="prev">
+                                            <span class="carousel-control-prev-icon"></span>
+                                        </button>
+
+                                        {{-- tombol kanan --}}
+                                        <button class="carousel-control-next" type="button" data-bs-target="#carousel-{{ $sn->id }}" data-bs-slide="next">
+                                            <span class="carousel-control-next-icon"></span>
+                                        </button>
+
+                                    </div>
+                                @else
+                                    <img src="{{ asset('images/noimage.jpg') }}" 
+                                        class="card-img-top"
+                                        style="height:180px; object-fit:cover;">
+                                @endif
+                                <div class="card-body bg-light">
+                                    {{-- SN --}}
+                                    <div class="mb-3 pb-2 border-bottom">
+                                        <div class="text-muted small text-uppercase mb-1">Serial Number</div>
+                                        <div class="fw-bold fs-6 text-dark">{{ $sn->sn }}</div>
+                                    </div>
+
+                                    {{-- Warehouse --}}
+                                    <div class="mb-3 pb-2 border-bottom">
+                                        <div class="text-muted small text-uppercase mb-1">Lokasi Warehouse</div>
+                                        <div>
+                                            <span class="fw-semibold">{{ $sn->warehouse }}</span>
+                                        </div>
+                                    </div>
+
+                                    {{-- Garansi (Tipe + Masa) --}}
+                                    <div class="mt-2">
+                                        <div class="text-muted small text-uppercase mb-1">Garansi</div>
+                                        <div>
+                                            @if ($sn->type_garansi !== null)
+                                                <span class="badge bg-info me-2">{{ ucfirst( $sn->type_garansi)}}</span>
+                                            @else
+                                                <span class="badge bg-warning me-2">Tidak ada</span>
+                                            @endif
+                                            {{-- <span class="badge bg-info me-2">{{ $sn->type_garansi ?? 'Tidak ada' }}</span> --}}
+                                            <span class="small text-muted">
+                                                <i class="bi bi-calendar me-1"></i>
+                                                {{ $sn->tanggal_fake ? \Carbon\Carbon::parse($sn->tanggal_fake)->format('d/m/Y') : '-' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
 
     {{-- ============================
     WAREHOUSE GROUP TABLES

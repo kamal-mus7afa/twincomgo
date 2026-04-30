@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\AccurateGlobal;
+use App\Models\Item;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Vinkla\Hashids\Facades\Hashids;
 
@@ -323,6 +323,13 @@ class KaryawanController extends Controller
 
         $partnerPrice = $userBasePrice - (($userBasePrice - $resellerBasePrice) / 2);
 
+        $snList = Item::with('images')
+            ->where('item_id', $id)
+            ->where('status', 'unkeep')
+            ->get();
+
+        // dd($snList);
+
         return view('items.karyawan.detail', [
             'item'          => $item,
             'images'        => $fileName,
@@ -343,6 +350,7 @@ class KaryawanController extends Controller
             'warehousesKonsinyasi' => $warehousesKonsinyasi,
             'warehousesPanda'      => $warehousesPanda,
             'warehousesTransit'    => $warehousesTransit,
+            'snList' => $snList,
         ]);
     }
 
