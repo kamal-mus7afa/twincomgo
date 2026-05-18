@@ -323,16 +323,36 @@ class KaryawanController extends Controller
 
         $partnerPrice = $userBasePrice - (($userBasePrice - $resellerBasePrice) / 2);
 
-        $snList = Item::with('images')
-            ->where('item_id', $id)
-            ->where('status', 'unkeep')
-            ->get();
+        $images = [];
+
+        foreach ($fileName as $file) {
+
+            $imageUrl = 'https://odin.accurate.id' . $file . '?session=' . $session;
+
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+            ])->get($imageUrl);
+
+            if ($response->successful()) {
+
+                $imageContent = $response->body();
+
+                [$width, $height] = getimagesizefromstring($imageContent);
+
+                $images[] = [
+                    'file' => $file,
+                    'url' => route('proxy.image', ['file' => $file]),
+                    'width' => $width,
+                    'height' => $height,
+                ];
+            }
+        }
 
         // dd($snList);
 
         return view('items.karyawan.detail', [
             'item'          => $item,
-            'images'        => $fileName,
+            'images'        => $images,
             'session'       => $session,
             'branchName'    => $branchName,
             'partnerPrice'  => $partnerPrice,
@@ -350,44 +370,29 @@ class KaryawanController extends Controller
             'warehousesKonsinyasi' => $warehousesKonsinyasi,
             'warehousesPanda'      => $warehousesPanda,
             'warehousesTransit'    => $warehousesTransit,
-            'snList' => $snList,
         ]);
     }
 
     public function proxyImage(Request $request)
     {
         $file = $request->query('file');
-        $session = $request->query('session');
 
-        if (!$file || !$session) {
-            return response('Missing params', 400);
-        }
-
-        // URL asli Accurate (WAJIB)
-        $baseUrl = rtrim(config('services.accurate.base_api'), '/');
-
-        // Token & Session
-        $status = strtoupper(trim(Auth::user()->status ?? ''));
-
-            $label = in_array($status, ['GLOBAL', 'RESELLER'])
-                ? $status
-                : 'GLOBAL';
-        $acc     = AccurateGlobal::token($label);
+        $acc = AccurateGlobal::token();
         $token = $acc['access_token'];
         $accurateSession = $acc['session_id'];
 
-        // Request ke Accurate pakai header WAJIB
+        $imageUrl = 'https://odin.accurate.id' . $file . '?session=' . $accurateSession;
+
         $response = Http::withHeaders([
-            'Authorization' => "Bearer $token",
-            'X-Session-ID'  => $accurateSession,
-        ])->get($baseUrl);
+            'Authorization' => 'Bearer ' . $token,
+        ])->get($imageUrl);
 
         if (!$response->successful()) {
             return response()->file(public_path('images/noimage.jpg'));
         }
 
         return response($response->body(), 200)
-            ->header('Content-Type', $response->header('Content-Type') ?? 'image/jpeg')
+            ->header('Content-Type', $response->header('Content-Type'))
             ->header('Cache-Control', 'public, max-age=3600');
     }
 

@@ -1,22 +1,22 @@
-@extends('layouts.admin')
+@extends(Auth::check() && Auth::user()->status === 'admin' ? 'layouts.admin' : 'layouts.app')
 
-@section('page-title', 'Galeri Second')
+@section('page-title', 'Pengajuan Harga')
 
 @section('content')
 
-<div class="card-header bg-transparent border-0 py-3">
+<div class="card border-0 py-3 px-4 mb-3">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
         <div class="d-flex align-items-center gap-3">
-            <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-3 p-3">
+            <div class="icon-box text-primary rounded-3 p-3">
                 <i class="bi bi-shop fs-3"></i>
             </div>
             <div>
-                <h4 class="mb-0 fw-semibold">Daftar Galeri Second</h4>
-                <p class="text-muted mb-0 small">Kelola data produk galeri second</p>
+                <h4 class="mb-0 fw-semibold">Pengajuan Harga</h4>
+                <p class="text-muted mb-0 small">Kelola pengajuan harga untuk barang second</p>
             </div>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ route('second.index') }}" class="btn btn-outline-secondary">
+            <a href="{{ Auth::check() && Auth::user()->status === 'admin' ? route('second.index') : route('second.indexKaryawan') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-2"></i>Kembali
             </a>
         </div>
@@ -29,20 +29,20 @@
         <div id="stepInvoice">
             <div class="mb-3">
                 <label class="form-label fw-semibold">
-                    <i class="bi bi-receipt me-2"></i>Nomor Purchase Invoice
+                    <i class="bi bi-receipt me-2"></i>Nomor Form Faktur Pembelian
                 </label>
                 <div class="input-group">
                     <input type="text"
                         id="numberInvoice"
-                        class="form-control form-control-lg"
-                        placeholder="Masukkan nomor invoice">
+                        class="form-control form-control"
+                        placeholder="contoh: PI.2026.**.****">
                     <button type="button"
                         class="btn btn-primary px-4"
                         onclick="getInvoice()">
                         <i class="bi bi-search me-2"></i>Cari Invoice
                     </button>
                 </div>
-                <small class="text-muted">Masukkan nomor invoice untuk memulai</small>
+                <small class="text-muted">Masukkan nomor form faktur pembelian untuk memulai</small>
             </div>
         </div>
 
@@ -57,20 +57,6 @@
                 <h5 class="mb-3 fw-semibold">
                     <i class="bi bi-pencil-square me-2"></i>Informasi Tambahan
                 </h5>
-
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Cabang</label>
-                    <select id="branchName" class="form-control">
-                        <option value="">Pilih Cabang</option>
-                    </select>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Gudang</label>
-                    <select id="warehouseName" class="form-control">
-                        <option value="">Pilih Gudang</option>
-                    </select>
-                </div>
 
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Customer</label>
@@ -207,7 +193,7 @@
             }
         });
 
-        fetch(`/purchase-invoice/detail?numberInvoice=${invoiceNumber}`)
+        fetch(`/price-submission/detail?numberInvoice=${invoiceNumber}`)
             .then(res => res.json())
             .then(data => {
 
@@ -258,7 +244,14 @@
                 detail.detailSerialNumber.forEach(sn => {
                     rows += `
                         <tr>
-                            <td class="align-middle">${detail.item?.id ?? '-'}</td>
+                            <td>
+                                <input
+                                    type="checkbox"
+                                    class="selected-item"
+                                    value="${detail.item?.no}"
+                                    data-detail='${encodeURIComponent(JSON.stringify(detail))}'
+                                >
+                            </td>
                             <td class="align-middle">${detail.item?.no ?? '-'}</td>
                             <td class="align-middle">
                                 <span class="badge bg-info">${sn.serialNumber?.number ?? '-'}</span>
@@ -270,7 +263,14 @@
             } else {
                 rows += `
                     <tr>
-                        <td class="align-middle">${detail.item?.id ?? '-'}</td>
+                        <td>
+                            <input
+                                type="checkbox"
+                                class="selected-item"
+                                value="${detail.item?.no}"
+                                data-detail='${encodeURIComponent(JSON.stringify(detail))}'
+                            >
+                        </td>
                         <td class="align-middle">${detail.item?.no ?? '-'}</td>
                         <td class="align-middle">
                             <span class="badge bg-secondary">-</span>
@@ -291,7 +291,7 @@
 
                     <table class="table table-borderless">
                         <tr>
-                            <th width="150">Nomor Invoice</th>
+                            <th width="250">Nomor Form Faktur Pembelian</th>
                             <td width="10">:</td>
                             <td><strong>${items.number}</strong></td>
                         </tr>
@@ -311,7 +311,9 @@
                         <table class="table table-bordered table-hover">
                             <thead class="table-light">
                                 <tr>
-                                    <th>ID</th>
+                                    <th width="50">
+                                        <input type="checkbox" id="checkAll">
+                                    </th>
                                     <th>Item No</th>
                                     <th>Serial Number</th>
                                     <th>Nama Barang</th>
@@ -383,11 +385,11 @@
         labelField: 'name',
         searchField: 'name',
         placeholder: 'Cari Customer...',
+        preload:true,
         
         load: function(query, callback) {
-            if (!query || query.length < 2) return callback();
             
-            fetch(`/customer?search=${query}`)
+            fetch(`/customer/manual?search=${query}`)
                 .then(res => res.json())
                 .then(data => {
                     callback(data.d);
@@ -402,7 +404,7 @@
                 return `
                     <div>
                         <strong>${escape(item.name)}</strong><br>
-                        <small class="text-muted">No: ${escape(item.customerNo || '-')}</small>
+                        <small class="text-muted">${escape(item.customer_number || '-')}</small>
                     </div>
                 `;
             },
@@ -423,94 +425,14 @@
         }
     });
 
-    let warehouseSelect = new TomSelect('#warehouseName', {
-        preload: true,
-        openOnFocus: true,
-        valueField: 'name',
-        labelField: 'name',
-        searchField: 'name',
-        create: false,
-        placeholder: 'Cari Gudang...',
-        load: function(query, callback) {
-            fetch(`/warehouse?search=${query}`)
-                .then(res => res.json())
-                .then(data => {
-                    callback(data.d);
-                })
-                .catch(() => callback());
-        },
-        render: {
-            option: function(item, escape) {
-                return `<div>${escape(item.name)}</div>`;
-            },
-            item: function(item, escape) {
-                return `<div>${escape(item.name)}</div>`;
-            }
-        }
-    });
-
-    let branchSelect = new TomSelect('#branchName', {
-        preload: true,
-        openOnFocus: true,
-        create: false,
-        sortField: { field: 'text', direction: 'asc' },
-        placeholder: 'Cari Cabang...',
-        valueField: 'name',
-        labelField: 'name',
-        searchField: 'name',
-        load: function(query, callback) {
-            fetch(`/branch?search=${query}`)
-                .then(res => res.json())
-                .then(data => {
-                    callback(data.d);
-                    this.open();
-                })
-                .catch(() => callback());
-        }
-    });
-
-    // Load branch awal
-    function loadInitialBranches()
-    {
-        fetch('/branch')
-            .then(res => res.json())
-            .then(data => {
-                let options = [{ name: 'Pilih Cabang', id: '' }];
-                if (data.d) {
-                    data.d.forEach(branch => {
-                        options.push({ name: branch.name, id: branch.name });
-                    });
-                }
-                branchSelect.clearOptions();
-                branchSelect.addOption(options);
-                branchSelect.setValue('');
-            })
-            .catch(err => console.error('Error loading branches:', err));
-    }
-
-    loadInitialBranches();
-
     // Fungsi Create SO
     function createSO()
     {
-        let branchName = branchSelect.getValue();
-        let warehouseName = warehouseSelect.getValue();
         let customerId = customerSelect.getValue();
         let description = document.getElementById('description').value;
         let hasWarranty = document.getElementById('hasWarranty').checked;
         let typeGaransi = document.getElementById('type_garansi').value;
         let tanggalReal = document.getElementById('tanggal_real').value;
-
-        // Validasi
-        if (!branchName) {
-            Swal.fire({ icon: 'warning', title: 'Validasi', text: 'Pilih cabang terlebih dahulu!', confirmButtonColor: '#0d9488' });
-            return;
-        }
-
-        if (!warehouseName) {
-            Swal.fire({ icon: 'warning', title: 'Validasi', text: 'Pilih gudang terlebih dahulu!', confirmButtonColor: '#0d9488' });
-            return;
-        }
 
         if (!customerId) {
             Swal.fire({ icon: 'warning', title: 'Validasi', text: 'Pilih customer terlebih dahulu!', confirmButtonColor: '#0d9488' });
@@ -556,19 +478,39 @@
         // Cara 3: Jika masih kosong, ambil dari data yang tersimpan saat load
         if (!customerName && window.selectedCustomerData) {
             customerName = window.selectedCustomerData.name;
-            customerNo = window.selectedCustomerData.customerNo;
+            customerNo = window.selectedCustomerData.customer_number;
+        }
+
+        let selectedItems = [];
+
+        document.querySelectorAll('.selected-item:checked').forEach(el => {
+                selectedItems.push(
+                    JSON.parse(
+                        decodeURIComponent(
+                            el.dataset.detail
+                        )
+                    )
+                );
+            });
+
+        if (selectedItems.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Validasi',
+                text: 'Pilih minimal 1 item'
+            });
+            return;
         }
 
         // Siapkan data untuk dikirim
         let postData = {
             description: description,
             numberInvoice: invoiceNumber,
-            branch_name: branchName,
-            warehouse_name: warehouseName,
             customer_no: customerNo,
             customer_name: customerName,
             customer_id: customerId,
-            has_warranty: hasWarranty
+            has_warranty: hasWarranty,
+            items: selectedItems,
         };
 
         // Tambahkan data garansi jika ada
@@ -624,7 +566,7 @@
                         Swal.fire({
                             icon: 'error',
                             title: 'Gagal',
-                            text: data.message || 'Terjadi kesalahan',
+                            text: 'Gagal periksa lagi SN atau Invoice apakah sama dengan yang sudah ada!!!',
                             confirmButtonColor: '#0d9488'
                         });
                     }

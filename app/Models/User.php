@@ -8,10 +8,11 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Activitylog\Traits\CausesActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, CausesActivity;
+    use HasApiTokens, HasFactory, Notifiable, CausesActivity, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -50,4 +51,6 @@ class User extends Authenticatable
     {
         return $this->belongsTo(AccurateAccount::class, 'accurate_account_id');
     }
+
+    
 }

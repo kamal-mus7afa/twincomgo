@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Twincomgo</title>
     <link rel="icon" href="{{ asset('images/tw.png') }}" type="image/png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photoswipe@5/dist/photoswipe.css">
     @laravelPWA
     <!-- Chrome for Android theme color -->
     <meta name="theme-color" content="#000000">
@@ -52,8 +53,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 
     @stack('styles')
+    
 </head>
 <body>
+@include('sweetalert::alert')
   <div id="loader-display" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0, 0, 0, 0.377); z-index:1050; display:flex; justify-content:center; align-items:center; flex-direction: column">
       <div class="d-flex justify-content-center align-items-center mb-4">
           <dotlottie-wc
@@ -73,23 +76,86 @@
 
     {{-- Navbar --}}
     <nav class="navbar navbar-dark fixed-top px-4 d-flex justify-content-between align-items-center">
-        <a class="navbar-brand fw-bold" href="#">Twincomgo</a>
+
+        <div class="d-flex align-items-center gap-4">
+
+            <a class="navbar-brand fw-bold mb-0" href="{{route('items.index')}}">
+                Twincomgo
+            </a>
+
+            @auth
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <a
+                        href="{{ route('second.product') }}"
+                        class="text-white text-decoration-none fw-semibold"
+                    >
+                        Barang Second/2nd
+                    </a>
+                    @can('view_second-product')
+                        <a
+                            href="{{ route('second.indexKaryawan') }}"
+                            class="text-white text-decoration-none fw-semibold"
+                        >
+                            Pengajuan Harga
+                        </a>
+                    @endcan
+                    
+
+                </div>
+
+            @endauth
+
+        </div>
 
         @auth
+
             <div class="dropdown">
-                <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-person-circle me-2"></i> {{ Auth::user()->name }}
+
+                <a
+                    href="#"
+                    class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
+                    id="userDropdown"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                >
+                    <i class="bi bi-person-circle me-2"></i>
+
+                    {{ Auth::user()->name }}
                 </a>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+
+                <ul
+                    class="dropdown-menu dropdown-menu-end"
+                    aria-labelledby="userDropdown"
+                >
+
                     <li>
-                        <form action="{{ route('logout') }}" method="POST" class="px-3">
+
+                        <form
+                            action="{{ route('logout') }}"
+                            method="POST"
+                            class="px-3"
+                        >
                             @csrf
-                            <button type="submit" class="btn btn-danger w-100">Logout</button>
+
+                            <button
+                                type="submit"
+                                class="btn btn-danger w-100"
+                            >
+                                Logout
+                            </button>
+
                         </form>
+
                     </li>
+
                 </ul>
+
             </div>
+
         @endauth
+
     </nav>
 
     {{-- Konten utama --}}
@@ -102,8 +168,19 @@
         <small>© {{ date('Y') }} TWINCOM GROUP — All Rights Reserved.</small>
     </footer>
 
-    
+@if(session('error'))
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    Swal.fire({
+        icon: 'error',
+        title: 'Akses Ditolak',
+        text: '{{ session('error') }}'
+    });
+});
+</script>
+@endif
 <!-- Library JS (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>

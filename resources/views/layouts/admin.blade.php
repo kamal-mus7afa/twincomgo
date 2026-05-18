@@ -13,6 +13,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="application-name" content="PWA">
     <link rel="icon" sizes="512x512" href="/images/icons/icon-512x512.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photoswipe@5/dist/photoswipe.css">
 
     <!-- Add to homescreen for Safari on iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -34,7 +35,7 @@
     <!-- Tile for Win8 -->
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="msapplication-TileImage" content="/images/icons/icon-512x512.png">
-    <title>Twincomgo - Admin Panel</title>
+    <title>Twincomgo - @yield('title')</title>
     <link rel="icon" href="{{ asset('images/tw.png') }}" type="image/png">
 
     {{-- Library CSS --}}
@@ -500,16 +501,12 @@
             padding-top: calc(var(--mobile-header-height) + 20px);
         }
 
-        .content-wrapper {
+        /* .content-wrapper {
             background: rgba(255, 255, 255, 0.9);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.5);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             margin-bottom: 20px;
-        }
+        } */
 
         /* ===== Mobile Bottom Navigation ===== */
         .mobile-bottom-nav {
@@ -877,7 +874,8 @@
     @stack('styles')
 </head>
 <body>
-
+    
+    @include('sweetalert::alert')
 {{-- Floating Background Elements --}}
 <div class="floating-shapes">
     <div class="shape shape-1"></div>
@@ -927,7 +925,8 @@
                 ['route' => 'admin.user', 'icon' => 'bi-people', 'label' => 'Pengguna', 'badge' => null],
                 ['route' => 'admin.items', 'icon' => 'bi-box-seam', 'label' => 'Barang & Jasa', 'badge' => null],
                 ['route' => 'admin.log', 'icon' => 'bi-archive', 'label' => 'Log', 'badge' => null],
-                ['route' => 'second.index', 'icon' => 'bi-shop', 'label' => 'Galeri Second', 'badge' => null],
+                ['route' => 'second.index', 'icon' => 'bi-cash-coin', 'label' => 'Pengajuan Harga', 'badge' => null],
+                ['route' => 'customer.index', 'icon' => 'bi-person-vcard', 'label' => 'Customer', 'badge' => null],
                 [
                     'icon' => 'bi-toggles',
                     'label' => 'Simulasi',
@@ -936,19 +935,29 @@
                         ['route' => 'admin.simulasi.rakitcctv', 'icon' => 'bi-camera-video', 'label' => 'Rakit CCTV'],
                     ]
                 ],
-                ['route' => 'aa.index', 'icon' => 'bi-diagram-3', 'label' => 'Accurate Token', 'badge' => null],
+                [
+                    'icon' => 'bi-gear-fill',
+                    'label' => 'Setting',
+                    'children' => [
+                        ['route' => 'permission.index', 'icon' => 'bi-person-lock', 'label' => 'Akses'],
+                        ['route' => 'aa.index', 'icon' => 'bi-diagram-3', 'label' => 'Accurate Token', 'badge' => null],
+                    ]
+                ],
             ];
         @endphp
 
-        @foreach ($navItems as $item)
+        @foreach ($navItems as $index => $item)
             <div class="nav-item">
 
                 @if(isset($item['children']))
-                    <!-- Dropdown -->
-                    <div class="">
+                    @php
+                        $menuId = 'menu-' . $index;
+                    @endphp
+
+                    <div>
                         <a class="nav-link"
                         data-bs-toggle="collapse"
-                        href="#menuSimulasi"
+                        href="#{{ $menuId }}"
                         role="button"
                         aria-expanded="false">
 
@@ -957,7 +966,7 @@
                             <i class="bi bi-chevron-down ms-auto"></i>
                         </a>
 
-                        <div class="collapse" id="menuSimulasi">
+                        <div class="collapse" id="{{ $menuId }}">
                             <div class="ps-4">
                                 @foreach ($item['children'] as $child)
                                     <a href="{{ route($child['route']) }}" class="nav-link">
@@ -970,7 +979,6 @@
                     </div>
 
                 @else
-                    <!-- Normal Menu -->
                     <a href="{{ route($item['route']) }}"
                     class="nav-link {{ request()->routeIs($item['route']) ? 'active' : '' }}">
                         <i class="nav-icon bi {{ $item['icon'] }}"></i>
@@ -1130,6 +1138,18 @@
         </div>
     </div>
 </div>
+
+@if(session('error'))
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    Swal.fire({
+        icon: 'error',
+        title: 'Akses Ditolak',
+        text: '{{ session('error') }}'
+    });
+});
+</script>
+@endif
 
 {{-- Script --}}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

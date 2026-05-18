@@ -20,7 +20,7 @@ class ResellerMiddleware
             return $next($request);
         }
 
-        abort(403, 'Akses ditolak.');
-        return back();
+        session()->flash('loginGagal', 'Bukan reseller');
+        return redirect('/');
     }
 }

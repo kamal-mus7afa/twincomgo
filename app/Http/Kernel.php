@@ -70,5 +70,8 @@ class Kernel extends HttpKernel
         'karyawan' => \App\Http\Middleware\KaryawanMiddleware::class,
         'reseller' => \App\Http\Middleware\ResellerMiddleware::class,
         'product.limit' => \App\Http\Middleware\ProductUserLimit::class,
+        'role' => \App\Http\Middleware\RoleMiddleware::class,
+        'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+        'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
     ];
 }

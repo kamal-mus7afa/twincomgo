@@ -198,6 +198,12 @@
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </form>
+                                        <a href="{{ route('permission.edit', $user->id) }}" 
+                                           class="btn action-btn btn-update" 
+                                           data-bs-toggle="tooltip" 
+                                           title="Edit User">
+                                            <i class="bi bi-person-lock"></i>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>

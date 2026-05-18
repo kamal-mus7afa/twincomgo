@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('second_products', function (Blueprint $table) {
             $table->id();
-
+            $table->foreignId('user_id')->constrained()->restrictOnDelete();
             // SOURCE PI
             $table->string('purchase_invoice_number');
             $table->string('purchase_invoice_id')->nullable();
@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('item_name');
 
             // SERIAL NUMBER
-            $table->string('serial_number')->nullable();
+            $table->string('serial_number')->unique()->nullable();
 
             $table->string('customer_id')->nullable();
             $table->string('customer_no')->nullable();
@@ -34,11 +34,12 @@ return new class extends Migration
             $table->string('sales_order_number')->nullable();
 
             $table->enum('status', [
-                'keep',
+                'diajukan',
                 'ready',
+                'booked',
                 'sold',
                 'cancel'
-            ])->default('keep');
+            ])->default('diajukan');
             $table->enum('type_garansi', ['resmi', 'distributor'])->nullable();
             $table->date('tanggal_real')->nullable();
             $table->date('tanggal_fake')->nullable();

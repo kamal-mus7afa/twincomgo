@@ -21,7 +21,7 @@
                             </p>
                         </div>
                     </div>
-                    <a href="{{ route('invoiceIndex') }}" class="btn btn-primary px-4 py-2">
+                    <a href="{{ route('submission') }}" class="btn btn-primary px-4 py-2">
                         <i class="bi bi-plus-circle me-2"></i>
                         Tambah
                     </a>
@@ -127,7 +127,7 @@
                             <th width="140">Serial Number</th>
                             <th>Nama Barang</th>
                             <th width="120">Kode Item</th>
-                            <th width="120">Harga</th>
+                            <th width="180">Harga</th>
                             <th width="120">Status</th>
                             <th width="120" class="text-center">Aksi</th>
                         </tr>
@@ -163,20 +163,29 @@
                                     <span class="badge bg-danger">
                                         <i class="bi bi-cart-check me-1"></i> Terjual
                                     </span>
-                                @elseif($item->status == 'keep')
+                                @elseif($item->status == 'diajukan')
                                     <span class="badge bg-warning">
-                                        <i class="bi bi-clock me-1"></i> Keep
+                                        <i class="bi bi-clock me-1"></i> Submission
+                                    </span>
+                                @elseif($item->status == 'booked')
+                                    <span class="badge bg-primary">
+                                        <i class="bi bi-box-seam"></i> Booking
                                     </span>
                                 @else
                                     <span class="badge bg-secondary">{{ $item->status ?? '-' }}</span>
                                 @endif
                              </td>
                             <td class="text-center">
-                                <div class="btn-group" role="group">
+                                <div class="d-flex gap-2" role="group">
+                                    <a href="{{ route('second.editClose', $item->id) }}" 
+                                        class="btn btn-sm btn-outline-warning"
+                                        title="Tutup SO">
+                                        <i class="bi bi-x-circle-fill"></i>
+                                    </a>
                                     <a href="{{ route('second.edit', $item->id) }}" 
-                                       class="btn btn-sm btn-outline-primary"
-                                       title="Edit Item">
-                                        <i class="bi bi-pencil"></i>
+                                        class="btn btn-sm btn-outline-secondary"
+                                        title="Edit Item">
+                                        <i class="bi bi-pencil-square"></i>
                                     </a>
                                     <button type="button" 
                                             class="btn btn-sm btn-outline-danger" 
@@ -200,7 +209,7 @@
                                     <i class="bi bi-inbox fs-1 d-block mb-3"></i>
                                     <h5>Belum Ada Data</h5>
                                     <p class="mb-3">Silakan tambahkan item baru ke Galeri Second</p>
-                                    <a href="{{ route('invoiceIndex') }}" class="btn btn-primary">
+                                    <a href="{{ route('submission') }}" class="btn btn-primary">
                                         <i class="bi bi-plus-circle me-1"></i>
                                         Tambah Item Sekarang
                                     </a>
@@ -330,6 +339,7 @@
 </style>
 
 @push('scripts')
+
 <script>
     let deleteId = null;
 

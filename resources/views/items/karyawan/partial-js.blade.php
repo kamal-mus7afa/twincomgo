@@ -320,4 +320,33 @@ document.addEventListener('click', function(e) {
     // Buka di tab baru
     window.open(pdfUrl, '_blank');
 });
+
+    document
+    .querySelectorAll('.preview-image')
+    .forEach(img => {
+
+        img.addEventListener('click', function() {
+
+            document
+                .getElementById('modalImage')
+                .src = this.dataset.image;
+        });
+    });
+</script>
+<script type="module">
+
+import PhotoSwipeLightbox from 'https://cdn.jsdelivr.net/npm/photoswipe@5/dist/photoswipe-lightbox.esm.min.js';
+
+const lightbox = new PhotoSwipeLightbox({
+
+    gallery: '#product-gallery',
+
+    children: 'a',
+
+    pswpModule: () =>
+        import('https://cdn.jsdelivr.net/npm/photoswipe@5/dist/photoswipe.esm.min.js')
+});
+
+lightbox.init();
+
 </script>

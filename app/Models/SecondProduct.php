@@ -11,6 +11,7 @@ class SecondProduct extends Model
 
     protected $fillable = [
 
+        'user_id',
         /*
         |--------------------------------------------------------------------------
         | PURCHASE INVOICE
@@ -93,5 +94,10 @@ class SecondProduct extends Model
     public function images()
     {
         return $this->hasMany(SecondProductImage::class);
+    }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
     }
 }

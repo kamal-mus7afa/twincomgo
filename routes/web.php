@@ -10,8 +10,11 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\ListController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\ResellerController;
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\SecondProductController;
+use App\Http\Controllers\ResellerController;
+use App\Http\Controllers\TestController;
+use App\Models\Order;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -81,7 +84,7 @@ Route::middleware('auth')->group(function () {
 | KARYAWAN
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'karyawan'])->group(function () {
+Route::middleware(['auth', 'role:KARYAWAN'])->group(function () {
 
     Route::get('/item', [ItemController::class, 'index'])->name('items.index');
     Route::get('/item/{encrypted}', [KaryawanController::class, 'show'])->name('karyawan.show');
@@ -100,7 +103,7 @@ Route::middleware(['auth', 'karyawan'])->group(function () {
 | ADMIN
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'role:admin'])->group(function () {
 
     Route::get('/admin-dashboard', [AdminController::class, 'index'])->name('admin.index');
 
@@ -138,6 +141,18 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get("/admin/simulasi/rakit-pc", [AdminController::class, 'indexRakitPc'])->name('admin.simulasi.rakitpc');
     Route::get("/admin/simulasi/rakit-cctv", [AdminController::class, 'indexRakitCctv'])->name('admin.simulasi.rakitcctv');
 
+    //PERMESSION
+    Route::get('/permission/create', [PermissionController::class, 'create'])->name('permission.create');
+    Route::get('/permission', [PermissionController::class, 'index'])->name('permission.index');
+    Route::post('/permission', [PermissionController::class, 'store'])->name('permission.store');
+    Route::put('/permission/{id}/update', [PermissionController::class, 'update'])->name('permission.update');
+    Route::get('/permission/{id}', [PermissionController::class, 'edit'])->name('permission.edit');
+    Route::delete('/permission/{id}', [PermissionController::class, 'destroy'])->name('permission.delete');
+
+    Route::get("/customer/create", [CustomerController::class, 'create'])->name('customer.create');
+    Route::get("/customer/index", [CustomerController::class, 'index'])->name('customer.index');
+    Route::post("/customer/store", [CustomerController::class, 'store'])->name('customer.store');
+
 });
 
 /*
@@ -165,37 +180,51 @@ Route::get('/branches', [KaryawanController::class, 'getBranches']);
 Route::get('/items/export-pdf', [ItemController::class, 'exportPdf1'])->name('items.exportPdf');
 Route::get('/items/export-excel', [ItemController::class, 'exportExcel1'])->name('items.excel');
 
+Route::middleware(['auth', 'role:admin,KARYAWAN'])->group(function () {
 
-Route::get('/purchase-invoice', [SecondProductController::class, 'invoiceIndex'])->name('invoiceIndex');
-Route::get('/purchase-invoice/detail', [SecondProductController::class, 'getDetailPurchaseInvoice'])->name('getInvoice');
+    // second product
+    Route::get('/second-products/karyawan', [SecondProductController::class, 'indexKaryawan'])->name('second.indexKaryawan')->middleware('permission:view_second-product');
+    Route::get('/second-products', [SecondProductController::class, 'index'])->name('second.index')->middleware('permission:view_second-product');
+    Route::get('/price-submission', [SecondProductController::class, 'submission'])->name('submission')->middleware('permission:create_second-product');
+    Route::get('/price-submission/detail', [SecondProductController::class, 'getDetailPurchaseInvoice'])->name('getInvoice');
+    Route::get('/second-products/{id}/close', [SecondProductController::class, 'editClose'])->name('second.editClose')->middleware('permission:aktif_close-order');
+    Route::get('/second-products/{id}/edit', [SecondProductController::class, 'edit'])->name('second.edit')->middleware('permission:edit_second-product');
 
-Route::post('/second-products/store', [SecondProductController::class, 'store']);
-Route::get('/branch', [SecondProductController::class, 'getBranch']);
-Route::get('/warehouse', [SecondProductController::class, 'getWarehouse']);
-Route::get('/customer', [SecondProductController::class, 'getCustomer']);
+    Route::post('/second-products/store', [SecondProductController::class, 'store']);
+    Route::post('/checkout', [OrderController::class, 'checkout'])->name('cart.checkout');
 
-Route::get(
-    '/second-products/{id}/edit',
-    [SecondProductController::class, 'edit']
-)->name('second.edit');
+    Route::put('/second-products/{id}', [SecondProductController::class, 'update'])->name('second.update');
+    Route::put('/second-products/close/{id}', [SecondProductController::class, 'close'])->name('second.close');
 
-Route::get(
-    '/second-products',
-    [SecondProductController::class, 'index']
-)->name('second.index');
+    Route::delete('/second-products/{id}', [SecondProductController::class, 'destroy'])->name('second.destroy');
+    Route::get('/second-products/{id}/show', [SecondProductController::class, 'show'])->name('second.show');
+    Route::patch('/second-products/{id}/status', [SecondProductController::class, 'updateStatus'])->name('second.updateStatus');
+    Route::delete('/second-image/{id}', [SecondProductController::class, 'deleteImage'])->name('second.image.delete');
+    // ===================
 
-Route::put(
-    '/second-products/{id}',
-    [SecondProductController::class, 'update']
-)->name('second.update');
+    // Cart
+    Route::get('/daftar-product', [SecondProductController::class, 'daftarProduct'])->name('second.product');
+    Route::get('/cart', [OrderController::class, 'index'])->name('cart.index');
+    Route::get('/checkout', [OrderController::class, 'index'])->name('cart.index');
 
-Route::delete('/second-products/{id}', [SecondProductController::class, 'destroy'])->name('second.destroy');
-Route::get('/second-products/{id}/show', [SecondProductController::class, 'show'])->name('second.show');
-Route::patch('/second-products/{id}/status', [SecondProductController::class, 'updateStatus'])->name('second.updateStatus');
+    
+    // Pengambilan data ke API Accurate
+    Route::get('/branch', [SecondProductController::class, 'getBranch']);
+    Route::get('/warehouse', [SecondProductController::class, 'getWarehouse']);
+    Route::get('/customer', [OrderController::class, 'customer']);
+    Route::get('/customer/manual', [OrderController::class, 'customerManual']);
+    Route::get('/branch', [OrderController::class, 'branch']);
+    Route::get('/warehouse', [OrderController::class, 'warehouse']);
+    // ==============
 
-Route::get('/daftar-product', [SecondProductController::class, 'daftarProduct'])->name('second.product');
-Route::post('/second/{id}/keep', [SecondProductController::class, 'keep'])->name('second.keep');
+    Route::post('/booked/{id}', [SecondProductController::class, 'keep'])->name('second.keep');
+    Route::get('/log-activity', [TestController::class, 'logActivityReseller'])->middleware('permission:view_log-activity')->name('log.reseller');
+    Route::get('/item-stock', [OrderController::class, 'stock']);
+    Route::delete('/cart/item/{id}', [OrderController::class, 'removeItem']);
 
-Route::get('/cart', [OrderController::class, 'index'])->name('cart.index');
-Route::get('/checkout', [OrderController::class, 'checkout'])
-    ->name('checkout');
+    Route::get("/order", [OrderController::class, 'orderList']);
+    Route::post('/order/{id}/deal', [OrderController::class, 'deal'])->name('order.deal');
+    Route::post('/order/{id}/cancel', [OrderController::class, 'cancel'])->name('order.cancel');
+});
+
+

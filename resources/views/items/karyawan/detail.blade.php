@@ -82,33 +82,46 @@
 
             {{-- IMAGE --}}
             <div class="col-md-4 text-center">
-                <div id="itemImageCarousel" class="carousel slide position-relative" data-bs-ride="carousel" >
-                    <div class="carousel-inner">
-                        @forelse ($images as $index => $file)
-                            <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
-                                <img 
-                                    src="{{ route('proxy.image', ['file' => $file, 'session' => $session]) }}"
-                                    class="d-block w-100 img-fluid rounded shadow-sm"
-                                    style="max-height: 300px; object-fit: contain;"
-                                    onerror="this.onerror=null; this.src='{{ asset('images/noimage.jpg') }}';"
-                                >
-                            </div>
-                        @empty
-                            <div class="carousel-item active">
-                                <img 
-                                    src="{{ asset('images/noimage.jpg') }}" 
-                                    class="d-block w-100 img-fluid rounded shadow-sm"
-                                    style="max-height: 300px; object-fit: contain;"
-                                >
-                            </div>
-                        @endforelse
+                <div id="product-gallery">
+                    <div id="itemImageCarousel" class="carousel slide position-relative" data-bs-ride="carousel" >
+                        <div class="carousel-inner">
+                            @forelse ($images as $index => $img)
+
+                                <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
+
+                                    <a 
+                                        href="{{ $img['url'] }}"
+                                        data-pswp-width="{{ $img['width'] }}"
+                                        data-pswp-height="{{ $img['height'] }}"
+                                    >
+
+                                        <img 
+                                            src="{{ $img['url'] }}"
+                                            class="d-block w-100 img-fluid rounded shadow-sm"
+                                            style="max-height:300px; object-fit:contain; cursor:pointer;"
+                                        >
+
+                                    </a>
+
+                                </div>
+
+                                @empty
+                                <div class="carousel-item active">
+                                    <img 
+                                        src="{{ asset('images/noimage.jpg') }}" 
+                                        class="d-block w-100 img-fluid rounded shadow-sm"
+                                        style="max-height: 300px; object-fit: contain;"
+                                    >
+                                </div>
+                            @endforelse
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#itemImageCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon"></span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#itemImageCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon"></span>
+                        </button>
                     </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#itemImageCarousel" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon"></span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#itemImageCarousel" data-bs-slide="next">
-                        <span class="carousel-control-next-icon"></span>
-                    </button>
                 </div>
             </div>
 
@@ -283,95 +296,6 @@
         </div>
         @endif
     </div>
-    @if($snList->isNotEmpty())
-        <div class="mt-4">
-            <h5 class="mb-3">Gambar barang perSN</h5>
-
-            <div class="row">
-                @foreach ($snList as $sn)
-                    <div class="col-md-4 col-lg-3 mb-4">
-                        {{-- Container dengan posisi relative untuk tag yang menjorok --}}
-                        <div class="position-relative">
-                            
-                            {{-- TAG READY di pojok KANAN luar card (nempel/menjorok) --}}
-                            @if($sn->status === 'unkeep')
-                                <div class="position-absolute top-0 end-0 z-3" style="transform: translate(10%, -30%);">
-                                    <span class="badge bg-success px-3 py-2 rounded-pill shadow-lg fs-6 fw-bold">
-                                        ✅ Tersedia
-                                    </span>
-                                </div>
-                            @endif
-
-                            {{-- CARD --}}
-                            <div class="card h-100 shadow-sm rounded-3 overflow-hidden">
-                                @if($sn->images && $sn->images->count())
-                                    <div id="carousel-{{ $sn->id }}" class="carousel slide" data-bs-ride="carousel">
-                                        
-                                        <div class="carousel-inner">
-                                            @foreach($sn->images as $key => $img)
-                                                <div class="carousel-item {{ $key == 0 ? 'active' : '' }}">
-                                                    <img src="{{ $img->url }}" 
-                                                        class="d-block w-100"
-                                                        style="height:180px; object-fit:cover;">
-                                                </div>
-                                            @endforeach
-                                        </div>
-
-                                        {{-- tombol kiri --}}
-                                        <button class="carousel-control-prev" type="button" data-bs-target="#carousel-{{ $sn->id }}" data-bs-slide="prev">
-                                            <span class="carousel-control-prev-icon"></span>
-                                        </button>
-
-                                        {{-- tombol kanan --}}
-                                        <button class="carousel-control-next" type="button" data-bs-target="#carousel-{{ $sn->id }}" data-bs-slide="next">
-                                            <span class="carousel-control-next-icon"></span>
-                                        </button>
-
-                                    </div>
-                                @else
-                                    <img src="{{ asset('images/noimage.jpg') }}" 
-                                        class="card-img-top"
-                                        style="height:180px; object-fit:cover;">
-                                @endif
-                                <div class="card-body bg-light">
-                                    {{-- SN --}}
-                                    <div class="mb-3 pb-2 border-bottom">
-                                        <div class="text-muted small text-uppercase mb-1">Serial Number</div>
-                                        <div class="fw-bold fs-6 text-dark">{{ $sn->sn }}</div>
-                                    </div>
-
-                                    {{-- Warehouse --}}
-                                    <div class="mb-3 pb-2 border-bottom">
-                                        <div class="text-muted small text-uppercase mb-1">Lokasi Warehouse</div>
-                                        <div>
-                                            <span class="fw-semibold">{{ $sn->warehouse }}</span>
-                                        </div>
-                                    </div>
-
-                                    {{-- Garansi (Tipe + Masa) --}}
-                                    <div class="mt-2">
-                                        <div class="text-muted small text-uppercase mb-1">Garansi</div>
-                                        <div>
-                                            @if ($sn->type_garansi !== null)
-                                                <span class="badge bg-info me-2">{{ ucfirst( $sn->type_garansi)}}</span>
-                                            @else
-                                                <span class="badge bg-warning me-2">Tidak ada</span>
-                                            @endif
-                                            {{-- <span class="badge bg-info me-2">{{ $sn->type_garansi ?? 'Tidak ada' }}</span> --}}
-                                            <span class="small text-muted">
-                                                <i class="bi bi-calendar me-1"></i>
-                                                {{ $sn->tanggal_fake ? \Carbon\Carbon::parse($sn->tanggal_fake)->format('d/m/Y') : '-' }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    @endif
 
     {{-- ============================
     WAREHOUSE GROUP TABLES
@@ -427,23 +351,53 @@
     @if(!empty($warehousesTransit) && count($warehousesTransit) > 0)
 
     <div class="warehouse-card card  warehouse-transit" id="warehouse_transit">
-    <div class="card-header fw-bold d-flex justify-content-between align-items-center">
+        <div class="card-header fw-bold d-flex justify-content-between align-items-center">
 
-        {{-- KIRI --}}
-        <div class="d-flex align-items-center gap-2 text-start">
-            <span>Transit (AOL System)</span>
-            <span class="badge bg-secondary">transit</span>
+            {{-- KIRI --}}
+            <div class="d-flex align-items-center gap-2 text-start">
+                <span>Transit (AOL System)</span>
+                <span class="badge bg-secondary">transit</span>
+            </div>
+
+            {{-- KANAN --}}
+            <span class="total-badge" id="total_transit">
+                {{ number_format($warehousesTransit->sum('balance'), 0, ',', '.') }}
+            </span>
+
         </div>
-
-        {{-- KANAN --}}
-        <span class="total-badge" id="total_transit">
-            {{ number_format($warehousesTransit->sum('balance'), 0, ',', '.') }}
-        </span>
-
     </div>
-</div>
 
     @endif
+</div>
+
+<div
+    class="modal fade"
+    id="imageModal"
+    tabindex="-1"
+>
+
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+
+        <div class="modal-content bg-dark border-0">
+
+            <div class="modal-body text-center p-0">
+
+                <img
+                    id="modalImage"
+                    src=""
+                    class="img-fluid"
+                    style="
+                        max-height:90vh;
+                        object-fit:contain;
+                    "
+                >
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
 
 

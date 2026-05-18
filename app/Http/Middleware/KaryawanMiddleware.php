@@ -20,7 +20,7 @@ class KaryawanMiddleware
             return $next($request);
         }
 
-        abort(403, 'Akses ditolak.');
-        return back();
+        session()->flash('loginGagal', 'Bukan karyawan');
+        return redirect('/');
     }
 }

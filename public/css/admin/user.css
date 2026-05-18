@@ -201,6 +201,11 @@
     color: var(--info);
 }
 
+.btn-update {
+    background: rgba(191, 212, 6, 0.1);
+    color: var(--info);
+}
+
 .btn-edit:hover {
     background: var(--info);
     color: white;
