@@ -1,5 +1,5 @@
 {{-- 🔹 Tabel Desktop --}}
-<div class="desktop-table" data-total="{{ $items->count() }}" data-original="{{ $totalItems ?? 0 }}">
+<div class="desktop-table" >
     <div class="card border-0 shadow-sm rounded-3">
         <div class="card-body p-0">
             <div class="table-responsive rounded">
@@ -16,12 +16,12 @@
                     <tbody>
                         @forelse ($items as $item)
                             <tr onclick="window.location='{{ 
-                                        Auth::user()->status === 'admin' 
-                                            ? route('admin.detail', ['encrypted' => Hashids::encode($item['id'])]) 
-                                            : (Auth::user()->status === 'RESELLER' 
-                                                ? route('reseller.detail', ['encrypted' => Hashids::encode($item['id'])]) 
-                                                : route('karyawan.show', ['encrypted' => Hashids::encode($item['id'])])
-                                            ) 
+                                        match(Auth::user()->status) {
+                                            'admin'          => route('admin.detail', ['encrypted' => Hashids::encode($item['id'])]),
+                                            'TWINCOM PATNER' => route('mitra.detail', ['encrypted' => Hashids::encode($item['id'])]), // Arahkan ke rute partner
+                                            'RESELLER'       => route('mitra.detail', ['encrypted' => Hashids::encode($item['id'])]), // Arahkan ke rute reseller
+                                            default          => route('karyawan.show', ['encrypted' => Hashids::encode($item['id'])]),
+                                        }
                                     }}'" style="cursor: pointer;">
                                 <td class="text-center" style="padding: 12px;"><span>{{ $item['no'] ?? '-' }}</span></td>
                                 <td>
@@ -34,7 +34,7 @@
                                             <span 
                                                 class="item-price"
                                                 data-id="{{ $item['id'] }}"
-                                                data-mode="{{ $filters['priceMode'] === 'reseller' ? 'RESELLER' : 'USER' }}"
+                                                data-mode="{{ match($filters['priceMode'] ?? 'default') { 'reseller' => 'RESELLER', 'patner' => 'TWINCOM PATNER', default => 'USER' } }}"
                                                 data-lazy-price
                                             >Loading…</span>
                                         </span>
@@ -106,7 +106,7 @@
                             </strong>
                         </div>
                         <a href="{{ Auth::user()->status === 'RESELLER' 
-                                ? route('reseller.detail', ['encrypted' => Hashids::encode($item['id'])]) 
+                                ? route('mitra.detail', ['encrypted' => Hashids::encode($item['id'])]) 
                                 : route('karyawan.show', ['encrypted' => Hashids::encode($item['id'])]) }}" class="btn btn-success btn-sm btn-detail">Detail</a>
                     </div>
                 </div>

@@ -107,7 +107,8 @@
                 <button type="submit" class="btn btn-primary w-100 shadow-sm">
                     <i class="bi bi-search"></i>
                 </button>
-                <a href="{{ route('reseller.index') }}" class="btn btn-secondary w-100 shadow-sm">
+                <a href="{{ route('mitra.index')
+                }}" class="btn btn-secondary w-100 shadow-sm">
                     <i class="bi bi-arrow-counterclockwise"></i>
                 </a>
             </div>
@@ -322,7 +323,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // 4. SUBMIT FILTER DENGAN AJAX
     // ==================================
     function buildFilterUrl() {
-        if (!filterForm) return "{{ route('reseller.index') }}";
+        if (!filterForm) return "{{ route('mitra.index') }}";
 
         const params = new URLSearchParams(new FormData(filterForm));
 
@@ -332,7 +333,7 @@ document.addEventListener("DOMContentLoaded", function () {
             params.set("per_page", perPageSelect.value);
         }
 
-        return "{{ route('reseller.index') }}?" + params.toString();
+        return "{{ route('mitra.index') }}?" + params.toString();
     }
 
     function submitFilterAjax() {
@@ -433,6 +434,7 @@ function collectLazyPrices() {
 }
 
 // Loader harga
+// Loader harga
 async function loadPrices() {
     if (!window.lazyPrices || window.lazyPrices.length === 0) return;
 
@@ -448,7 +450,10 @@ async function loadPrices() {
         targets.forEach(t => t.innerHTML = "…");
 
         try {
-            let url = `/ajax/priceReseller?id=${item.id}&mode=RESELLER`;
+            // Hapus &mode=RESELLER, cukup kirimkan ID barang saja
+            // Backend akan otomatis mengenali user ini RESELLER atau PARTNER
+            let url = `/ajax/priceReseller?id=${item.id}`; 
+            
             let res = await fetch(url);
             let data = await res.json();
             let price = new Intl.NumberFormat("id-ID").format(data.price ?? 0);
@@ -459,7 +464,8 @@ async function loadPrices() {
             targets.forEach(t => t.innerHTML = "0");
         }
 
-        await new Promise(r => setTimeout(r, 150));
+        // Jeda waktu (delay) yang bagus untuk mencegah hit API terlalu brutal
+        await new Promise(r => setTimeout(r, 150)); 
     }
 }
 

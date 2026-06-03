@@ -25,8 +25,8 @@ class RedirectIfAuthenticated
 
                 if ($user->status === 'admin') {
                     return redirect()->route('admin.index');
-                } elseif ($user->status === 'RESELLER') {
-                    return redirect()->route('items.index');
+                } elseif ($user->status === 'RESELLER' || $user->status === 'TWINCOM PATNER') {
+                    return redirect()->route('reseller.index');
                 } elseif ($user->status === 'KARYAWAN') {
                     return redirect()->route('items.index');
                 }

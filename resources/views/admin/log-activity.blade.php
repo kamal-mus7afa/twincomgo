@@ -1,140 +1,143 @@
 @extends('layouts.admin')
 
-@section('page-title', 'Activity Logs')
+@section('title', 'Log Aktivitas')
+
+@section('page-title', 'Log Aktivitas')
 
 @section('content')
+
+@push('styles')
 <style>
-    /* ===== VARIABLES ===== */
+    /* ===== PREMIUM SAAS DESIGN SYSTEM ===== */
     :root {
-        --primary: #6366f1;
-        --primary-dark: #4f46e5;
+        --primary: #4f46e5;
+        --primary-hover: #4338ca;
+        --primary-light: #e0e7ff;
+        
         --success: #10b981;
+        --success-light: #d1fae5;
         --warning: #f59e0b;
+        --warning-light: #fef3c7;
         --danger: #ef4444;
-        --info: #06b6d4;
-        --dark: #1e293b;
-        --light: #f8fafc;
+        --danger-light: #fee2e2;
+        --info: #0ea5e9;
+        --info-light: #e0f2fe;
+        --purple: #8b5cf6;
+        --purple-light: #ede9fe;
+        
+        --dark: #0f172a;
+        --secondary: #64748b;
+        --bg-surface: #ffffff;
+        --bg-light: #f8fafc;
+        --border-color: #e2e8f0;
     }
 
-    /* ===== HEADER SECTION ===== */
+    /* ===== PAGE HEADER ===== */
     .page-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 20px;
-        padding: 30px;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
-        position: relative;
-        overflow: hidden;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 16px;
     }
-
-    .page-header::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 200px;
-        height: 200px;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-    }
-
-    .header-content {
-        position: relative;
-        z-index: 2;
-    }
-
-    .page-header h1 {
-        font-size: 2.2rem;
+    .header-content h1 {
+        font-size: 24px;
         font-weight: 800;
-        margin-bottom: 0.5rem;
-        background: linear-gradient(90deg, #fff, #e0e7ff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--dark);
+        margin-bottom: 6px;
+        letter-spacing: -0.5px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
-
     .page-description {
-        font-size: 1.1rem;
-        opacity: 0.9;
-        margin-bottom: 0;
+        color: var(--secondary);
+        margin: 0;
+        font-size: 14.5px;
     }
-
-    .back-btn {
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        color: white;
-        border: none;
-        border-radius: 12px;
+    .btn-back-pill {
+        background: #fff;
         padding: 10px 20px;
+        border-radius: 50px;
+        font-size: 14px;
         font-weight: 600;
-        transition: all 0.3s ease;
+        color: var(--dark);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.2s ease;
     }
-
-    .back-btn:hover {
-        background: rgba(255, 255, 255, 0.3);
+    .btn-back-pill:hover {
+        background: var(--bg-light);
+        border-color: #cbd5e1;
         transform: translateY(-2px);
     }
+    .btn-back-pill i { color: var(--primary); font-size: 1.1rem; }
 
-    /* ===== STATS CARDS ===== */
+    /* ===== STATS GRID ===== */
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 20px;
-        margin-bottom: 2rem;
+        margin-bottom: 24px;
     }
-
     .stat-item {
-        background: white;
+        background: var(--bg-surface);
         border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        border-left: 4px solid var(--primary);
+        border: 1px solid var(--border-color);
+        padding: 24px;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
         transition: all 0.3s ease;
-        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        border-left: 4px solid var(--primary);
     }
-
     .stat-item:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        transform: translateY(-4px);
+        box-shadow: 0 12px 20px -5px rgba(0,0,0,0.08);
+        border-color: #cbd5e1;
     }
-
-    .stat-item:nth-child(2) { border-left-color: var(--success); }
-    .stat-item:nth-child(3) { border-left-color: var(--info); }
+    .stat-item:nth-child(2) { border-left-color: var(--info); }
+    .stat-item:nth-child(3) { border-left-color: var(--success); }
     .stat-item:nth-child(4) { border-left-color: var(--warning); }
 
     .stat-number {
-        font-size: 2rem;
+        font-size: 32px;
         font-weight: 800;
         color: var(--dark);
-        line-height: 1;
-        margin-bottom: 5px;
+        line-height: 1.1;
+        margin-bottom: 8px;
     }
-
     .stat-label {
-        color: #64748b;
+        font-size: 13px;
         font-weight: 600;
-        font-size: 0.9rem;
+        color: var(--secondary);
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
-    /* ===== FILTER CARD ===== */
-    .filter-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        border-radius: 20px;
-        padding: 25px;
-        box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
-        margin-bottom: 2rem;
-        border: 1px solid rgba(255, 255, 255, 0.3);
+    /* ===== PANELS (FILTER & TABLE) ===== */
+    .filter-card, .table-card {
+        background: var(--bg-surface);
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+        margin-bottom: 24px;
+        overflow: visible; /* Penting untuk dropdown & TomSelect */
     }
-
-    .filter-header {
-        display: flex;
-        justify-content: between;
-        align-items: center;
-        margin-bottom: 20px;
+    .filter-header, .table-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #f1f5f9;
+        background: var(--bg-surface);
+        border-radius: 16px 16px 0 0;
     }
-
-    .filter-title {
+    .filter-title, .table-header h3 {
+        font-size: 16px;
         font-weight: 700;
         color: var(--dark);
         margin: 0;
@@ -143,341 +146,160 @@
         gap: 10px;
     }
 
-    .form-control, .form-select {
-        border-radius: 12px;
-        border: 2px solid #e2e8f0;
-        /* padding: 12px 15px; */
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
+    /* ===== MODERN FORM (FILTER) ===== */
+    .filter-card form {
+        padding: 24px;
+        background: var(--bg-light);
+        border-radius: 0 0 16px 16px;
     }
-
-    .form-control:focus, .form-select:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
-        transform: translateY(-2px);
-    }
-
-    .date-filter-btn {
-        background: white;
-        border: 2px solid #e2e8f0;
-        border-radius: 12px;
-        /* padding: 12px 15px; */
-        font-weight: 500;
-        transition: all 0.3s ease;
-        width: 100%;
-        text-align: left;
-    }
-
-    .date-filter-btn:hover {
-        border-color: var(--primary);
-        transform: translateY(-2px);
-    }
-
-    .search-btn {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        border: none;
-        border-radius: 12px;
-        color: white;
-        /* padding: 12px 12px; */
+    .form-label {
+        font-size: 13px;
         font-weight: 600;
-        transition: all 0.3s ease;
+        color: var(--dark);
+        margin-bottom: 8px;
     }
-
-    .search-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    .form-control, .form-select, .date-filter-btn {
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        padding: 10px 16px;
+        font-size: 14px;
+        background: #fff;
+        transition: all 0.2s;
+        color: var(--dark);
     }
-
-    .reset-btn {
-        background: #64748b;
-        border: none;
-        border-radius: 12px;
-        color: white;
-        /* padding: 12px; */
-        transition: all 0.3s ease;
+    .form-control:focus, .form-select:focus, .date-filter-btn:focus {
+        border-color: var(--primary);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
     }
-
-    .reset-btn:hover {
-        background: #475569;
-        transform: translateY(-2px);
-    }
-
-    /* ===== TABLE SECTION ===== */
-    .table-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        border-radius: 20px;
-        box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-
-    .table-header {
-        background: linear-gradient(135deg, #1e293b 0%, #374151 100%);
-        color: white;
-        padding: 25px;
-        border: none;
-    }
-
-    .table-header h3 {
-        font-weight: 700;
-        margin: 0;
+    .date-filter-btn {
+        text-align: left;
         display: flex;
         align-items: center;
-        gap: 10px;
+        justify-content: space-between;
     }
+    .search-btn {
+        background: var(--dark);
+        color: white;
+        border-radius: 10px;
+        font-weight: 600;
+        padding: 10px 16px;
+        transition: all 0.2s;
+        border: none;
+    }
+    .search-btn:hover { background: #1e293b; color: white; transform: translateY(-1px); }
+    .reset-btn {
+        background: white;
+        color: var(--secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 10px 16px;
+        transition: all 0.2s;
+    }
+    .reset-btn:hover { background: #f1f5f9; color: var(--dark); }
 
-    .table-container {
+    /* Customizing TomSelect to match Modern Theme */
+    .ts-control {
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        padding: 10px 16px;
+        font-size: 14px;
+        background: #fff;
+        box-shadow: none;
+        transition: all 0.2s;
+    }
+    .ts-control.focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+    .ts-dropdown { border-radius: 10px; border-color: var(--border-color); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+    .ts-dropdown .active { background-color: var(--bg-light); color: var(--dark); }
+
+    /* ===== MODERN TABLE ===== */
+    .table-container { 
+        width: 100%; 
+        overflow-x: auto; 
         max-height: 600px;
-        overflow-y: auto;
-        scrollbar-width: thin;
-        scrollbar-color: var(--primary) #f1f5f9;
     }
-
-    .table-container::-webkit-scrollbar {
-        width: 8px;
-    }
-
-    .table-container::-webkit-scrollbar-track {
-        background: #f1f5f9;
-        border-radius: 10px;
-    }
-
-    .table-container::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        border-radius: 10px;
-    }
-
-    .table {
-        margin: 0;
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-
-    .table thead th {
-        background: #f8fafc;
-        color: #64748b;
+    .table { margin: 0; width: 100%; }
+    .table th {
+        background: var(--bg-light);
+        color: var(--secondary);
+        font-size: 12px;
         font-weight: 700;
         text-transform: uppercase;
-        font-size: 0.8rem;
         letter-spacing: 0.5px;
-        border-bottom: 2px solid #e2e8f0;
-        padding: 20px;
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--border-color);
+        white-space: nowrap;
         position: sticky;
         top: 0;
         z-index: 10;
     }
-
-    .table tbody tr {
-        transition: all 0.3s ease;
-        border-bottom: 1px solid #f1f5f9;
-    }
-
-    .table tbody tr:hover {
-        background: #f8fafc;
-        transform: scale(1.01);
-    }
-
-    .table tbody tr.recent-activity {
-        background: rgba(245, 158, 11, 0.05);
-        border-left: 4px solid var(--warning);
-    }
-
-    .table tbody td {
-        padding: 20px;
+    .table td {
+        padding: 16px 24px;
         vertical-align: middle;
-        border: none;
-        font-weight: 500;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+        transition: background 0.2s;
     }
+    .table tbody tr:hover td { background: var(--bg-light); }
+    
+    /* Highlight Recent Activity */
+    .table tbody tr.recent-activity td { background: rgba(14, 165, 233, 0.03); }
+    .table tbody tr.recent-activity td:first-child { border-left: 3px solid var(--info); }
 
-    /* ===== BADGES ===== */
+    /* Badges */
     .status-badge {
-        padding: 8px 16px;
-        border-radius: 20px;
+        padding: 6px 14px;
+        border-radius: 50px;
         font-weight: 700;
-        font-size: 0.8rem;
+        font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        display: inline-block;
     }
+    .badge-karyawan { background: var(--info-light); color: var(--info); border: 1px solid rgba(14,165,233,0.2); }
+    .badge-reseller { background: var(--warning-light); color: #d97706; border: 1px solid rgba(245,158,11,0.2); }
+    .badge-admin { background: var(--purple-light); color: var(--purple); border: 1px solid rgba(139,92,246,0.2); }
+    .badge-other { background: #f1f5f9; color: var(--secondary); border: 1px solid var(--border-color); }
 
-    .badge-karyawan {
-        background: rgba(16, 185, 129, 0.1);
-        color: var(--success);
-        border: 1px solid rgba(16, 185, 129, 0.2);
-    }
-
-    .badge-reseller {
-        background: rgba(239, 68, 68, 0.1);
-        color: var(--danger);
-        border: 1px solid rgba(239, 68, 68, 0.2);
-    }
-
-    .badge-admin {
-        background: rgba(37, 99, 235, 0.1);
-        color: var(--primary);
-        border: 1px solid rgba(37, 99, 235, 0.2);
-    }
-
-    .badge-other {
-        background: rgba(100, 116, 139, 0.1);
-        color: #64748b;
-        border: 1px solid rgba(100, 116, 139, 0.2);
-    }
-
-    /* ===== USER AVATAR ===== */
-    .user-avatar-sm {
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 600;
-        font-size: 14px;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-    }
-
-    /* ===== PAGINATION ===== */
+    /* Pagination */
     .pagination-section {
-        background: #f8fafc;
-        border-top: 1px solid #e2e8f0;
-        padding: 20px 25px;
-        border-radius: 0 0 20px 20px;
+        padding: 20px 24px;
+        background: #fff;
+        border-top: 1px solid #f1f5f9;
+        border-radius: 0 0 16px 16px;
     }
+    .pagination-info { font-size: 13.5px; color: var(--secondary); }
 
-    .pagination-info {
-        color: #64748b;
-        font-weight: 500;
+    /* Empty State */
+    .empty-state { text-align: center; padding: 60px 20px; }
+    .empty-icon { font-size: 3rem; color: #cbd5e1; margin-bottom: 16px; }
+
+    /* Dropdown overrides for Date picker */
+    .dropdown-menu { border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+
+    /* Animations */
+    @keyframes slideUpFade {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
     }
-
-    /* ===== EMPTY STATE ===== */
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        color: #64748b;
-    }
-
-    .empty-icon {
-        font-size: 4rem;
-        margin-bottom: 1rem;
-        opacity: 0.5;
-    }
-
-    .empty-state h4 {
-        color: #475569;
-        margin-bottom: 0.5rem;
-    }
-
-    /* ===== ANIMATIONS ===== */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .animate-card {
-        animation: fadeInUp 0.6s ease-out;
-    }
-
-    .dropdown {
-        position: relative;
-    }
-
-    .dropdown-menu {
-        z-index: 2000;
-    }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 768px) {
-        .date-filter-btn:hover {
-            transform: none;
-        }
-        .page-header {
-            padding: 20px;
-            text-align: center;
-        }
-
-        .dropdown {
-            position: relative;
-        }
-
-        .dropdown-menu {
-            z-index: 3000 !important;
-            position: absolute !important;
-        }
-
-        .filter-card,
-        .row,
-        .col-xl-3,
-        .col-lg-5,
-        .col-md-6 {
-            overflow: visible !important;
-        }
-        
-        .page-header h1 {
-            font-size: 1.8rem;
-        }
-        
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .filter-header {
-            flex-direction: column;
-            gap: 15px;
-            text-align: center;
-        }
-        
-        .table-header {
-            padding: 20px;
-        }
-        
-        .table-container {
-            max-height: none;
-        }
-        
-        .table thead th,
-        .table tbody td {
-            padding: 12px 8px;
-            font-size: 0.6rem;
-        }
-        .badge-karyawan {
-            border: none;
-            background: none;
-            font-size: 0.6rem;
-        }
-        .badge-admin {
-            border: none;
-            background: none;
-            font-size: 0.6rem;
-        }
-        .badge-reseller {
-            border: none;
-            background: none;
-            font-size: 0.6rem;
-        }
-    }
+    .animate-card { animation: slideUpFade 0.5s ease backwards; }
 </style>
+@endpush
 
 <div class="container-fluid py-4">
 
     {{-- HEADER SECTION --}}
     <div class="page-header animate-card">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 w-100">
             <div class="header-content">
-                <h1>
-                    <i class="bi bi-clock-history me-3"></i>Activity Logs
-                </h1>
-                <p class="page-description">Pantau dan lacak semua aktivitas pengguna secara real-time</p>
+                <h1><i class="bi bi-clock-history text-primary me-2"></i> Log Aktivitas</h1>
+                <p class="page-description">Pantau dan lacak semua aktivitas pengguna di sistem secara real-time.</p>
             </div>
-            <a href="{{ route('admin.index') }}" class="btn back-btn">
-                <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+            <a href="{{ route('admin.index') }}" class="btn-back-pill">
+                <i class="bi bi-arrow-left"></i> <span>Kembali ke Dashboard</span>
             </a>
         </div>
     </div>
@@ -485,23 +307,22 @@
     {{-- STATS GRID --}}
     <div class="stats-grid animate-card" style="animation-delay: 0.1s">
         <div class="stat-item">
-            <div class="stat-number">{{ $activities->total() }}</div>
-            <div class="stat-label">Total Activities</div>
+            <div class="stat-number">{{ number_format($activities->total()) }}</div>
+            <div class="stat-label"><i class="bi bi-activity me-1"></i> Total Aktivitas</div>
         </div>
         <div class="stat-item">
-            <div class="stat-number">{{ $activities->where('created_at', '>=', now()->startOfDay())->count() }}</div>
-            <div class="stat-label">Today</div>
+            <div class="stat-number">{{ number_format($activities->where('created_at', '>=', now()->startOfDay())->count()) }}</div>
+            <div class="stat-label"><i class="bi bi-calendar-event me-1"></i> Hari Ini</div>
         </div>
         <div class="stat-item">
-            <div class="stat-number">{{ $activities->where('created_at', '>=', now()->startOfDay())
-                                                            ->whereNotNull('causer_id')
-                                                            ->unique('causer_id')
-                                                            ->count(); }}</div>
-            <div class="stat-label">Active Users</div>
+            <div class="stat-number">
+                {{ number_format($activities->where('created_at', '>=', now()->startOfDay())->whereNotNull('causer_id')->unique('causer_id')->count()) }}
+            </div>
+            <div class="stat-label"><i class="bi bi-people-fill me-1"></i> User Aktif (Harian)</div>
         </div>
         <div class="stat-item">
-            <div class="stat-number">{{ $activities->where('created_at', '>=', now()->subHours(1))->count() }}</div>
-            <div class="stat-label">Last Hour</div>
+            <div class="stat-number">{{ number_format($activities->where('created_at', '>=', now()->subHours(1))->count()) }}</div>
+            <div class="stat-label"><i class="bi bi-stopwatch me-1"></i> 1 Jam Terakhir</div>
         </div>
     </div>
 
@@ -509,8 +330,7 @@
     <div class="filter-card animate-card" style="animation-delay: 0.2s">
         <div class="filter-header">
             <h3 class="filter-title">
-                <i class="bi bi-funnel"></i>
-                Filter & Search
+                <i class="bi bi-funnel-fill text-secondary"></i> Filter & Pencarian
             </h3>
         </div>
         
@@ -518,7 +338,7 @@
             <div class="row g-3 align-items-end">
                 {{-- User Search --}}
                 <div class="col-xl-3 col-lg-4 col-md-6">
-                    <label for="user-search" class="form-label fw-semibold">User</label>
+                    <label for="user-search" class="form-label">Cari Pengguna</label>
                     <select id="user-search" name="user" class="form-select">
                         @if(request('user'))
                             <option value="{{ request('user') }}" selected>{{ request('user') }}</option>
@@ -529,9 +349,9 @@
 
                 {{-- Status Filter --}}
                 <div class="col-xl-2 col-lg-3 col-md-6">
-                    <label for="status" class="form-label fw-semibold">Status</label>
+                    <label for="status" class="form-label">Status Role</label>
                     <select name="status" class="form-select" id="status">
-                        <option value="">All Status</option>
+                        <option value="">Semua Status</option>
                         <option value="karyawan" {{ request('status') == 'karyawan' ? 'selected' : '' }}>Karyawan</option>
                         <option value="reseller" {{ request('status') == 'reseller' ? 'selected' : '' }}>Reseller</option>
                         <option value="admin" {{ request('status') == 'admin' ? 'selected' : '' }}>Admin</option>
@@ -540,27 +360,31 @@
 
                 {{-- Date Filter --}}
                 <div class="col-xl-3 col-lg-5 col-md-6">
-                    <label class="form-label fw-semibold">Date Range</label>
+                    <label class="form-label">Rentang Tanggal</label>
                     <div class="dropdown w-100" data-bs-auto-close="outside">
-                        <button class="btn date-filter-btn dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-calendar3 me-2"></i>
-                            @if(request('start_date') && request('end_date'))
-                                {{ request('start_date') }} - {{ request('end_date') }}
-                            @else
-                                All Dates
-                            @endif
+                        <button class="btn date-filter-btn w-100" type="button" data-bs-toggle="dropdown">
+                            <span>
+                                <i class="bi bi-calendar3 text-muted me-2"></i>
+                                @if(request('start_date') && request('end_date'))
+                                    {{ request('start_date') }} s/d {{ request('end_date') }}
+                                @else
+                                    Semua Tanggal
+                                @endif
+                            </span>
+                            <i class="bi bi-chevron-down ms-2" style="font-size: 12px;"></i>
                         </button>
-                        <div class="dropdown-menu p-3" style="min-width: 300px;">
+                        <div class="dropdown-menu p-4 mt-1" style="min-width: 320px;">
+                            <h6 class="mb-3 fw-bold text-dark">Filter Tanggal</h6>
                             <div class="mb-3">
-                                <label for="start_date" class="form-label fw-semibold">From</label>
+                                <label for="start_date" class="form-label">Dari Tanggal</label>
                                 <input type="date" name="start_date" class="form-control" id="start_date" value="{{ request('start_date') }}" />
                             </div>
-                            <div class="mb-3">
-                                <label for="end_date" class="form-label fw-semibold">To</label>
+                            <div class="mb-4">
+                                <label for="end_date" class="form-label">Sampai Tanggal</label>
                                 <input type="date" name="end_date" class="form-control" id="end_date" value="{{ request('end_date') }}" />
                             </div>
-                            <button type="submit" class="btn search-btn w-100">
-                                <i class="bi bi-filter me-1"></i> Apply Filter
+                            <button type="submit" class="btn search-btn w-100 py-2">
+                                Terapkan Filter
                             </button>
                         </div>
                     </div>
@@ -568,14 +392,14 @@
 
                 {{-- Search --}}
                 <div class="col-xl-4 col-lg-6 col-md-6">
-                    <label for="search" class="form-label fw-semibold">Search Activities</label>
+                    <label for="search" class="form-label">Cari Aktivitas / Deskripsi</label>
                     <div class="input-group">
-                        <input type="text" name="search" class="form-control" 
-                               placeholder="Search activity logs..." value="{{ request('search') }}">
-                        <button class="btn search-btn" type="submit">
-                            <i class="bi bi-search me-1"></i>
+                        <input type="text" name="search" class="form-control border-end-0" 
+                               placeholder="Ketik kata kunci..." value="{{ request('search') }}">
+                        <button class="btn search-btn border-start-0 px-3" type="submit" style="border-radius: 0;">
+                            <i class="bi bi-search"></i>
                         </button>
-                        <a href="{{ route('admin.log') }}" class="btn reset-btn" title="Reset Filters">
+                        <a href="{{ route('admin.log') }}" class="btn reset-btn" data-bs-toggle="tooltip" title="Reset Semua Filter" style="border-radius: 0 10px 10px 0;">
                             <i class="bi bi-arrow-clockwise"></i>
                         </a>
                     </div>
@@ -588,37 +412,36 @@
     <div class="table-card animate-card" style="animation-delay: 0.3s">
         <div class="table-header">
             <h3>
-                <i class="bi bi-activity"></i>
-                Activity History
+                <i class="bi bi-list-columns-reverse text-primary"></i>
+                Riwayat Aktivitas
             </h3>
         </div>
 
         @if ($activities->count() > 0)
             <div class="table-container">
-                <table class="table table-hover">
+                <table class="table">
                     <thead>
                         <tr>
-                            <th width="60">#</th>
-                            <th>User</th>
-                            <th width="250" class="text-center">Status</th>
-                            <th width="250" class="text-center">Date</th>
-                            <th width="100">Login</th>
-                            <th width="100">Logout</th>
+                            <th width="60" class="text-center">No</th>
+                            <th>Informasi Pengguna</th>
+                            <th width="180" class="text-center">Role / Status</th>
+                            <th width="180" class="text-center">Tanggal</th>
+                            <th width="140" class="text-center">Waktu Login</th>
+                            <th width="140" class="text-center">Waktu Logout</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($activities as $index => $activity)
-                            <tr class="{{ now()->diffInMinutes($activity->created_at) <= 60 ? 'recent-activity' : '' }} animate-card" 
-                                style="animation-delay: {{ $loop->index * 0.05 }}s">
-                                <td class="text-center fw-bold text-primary">
+                            <tr class="{{ now()->diffInMinutes($activity->created_at) <= 60 ? 'recent-activity' : '' }}">
+                                <td class="text-center fw-bold text-muted">
                                     {{ $activities->firstItem() + $index }}
                                 </td>
                                 <td>
-                                    <div class="d-flex align-items-center gap-3">
+                                    <div class="d-flex align-items-center gap-2">
                                         <div>
-                                            <div class="fw-bold text-dark">{{ $activity->log_name ?? 'System' }}</div>
+                                            <div class="fw-bold text-dark fs-6">{{ $activity->log_name ?? 'System' }}</div>
                                             @if(now()->diffInMinutes($activity->created_at) <= 60)
-                                                <div class="badge bg-primary text-white small">Terbaru</div>
+                                                <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 small mt-1">Aktivitas Baru</span>
                                             @endif
                                         </div>
                                     </div>
@@ -636,16 +459,20 @@
                                     @endif
                                 </td>
                                 <td class="text-center">
-                                    <div class="fw-semibold">{{ $activity->created_at->format('d M Y') }}</div>
+                                    <div class="fw-medium text-secondary">{{ $activity->created_at->format('d M Y') }}</div>
                                 </td>
                                 <td class="text-center">
-                                    <div class="text-success fw-bold">{{ $activity->created_at->format('H:i:s') }}</div>
+                                    <div class="text-success fw-bold bg-success bg-opacity-10 px-2 py-1 rounded d-inline-block">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i> {{ $activity->created_at->format('H:i:s') }}
+                                    </div>
                                 </td>
                                 <td class="text-center">
                                     @if ($activity->logout_time)
-                                        <div class="text-danger fw-bold">{{ $activity->logout_time->format('H:i:s') }}</div>
+                                        <div class="text-danger fw-bold bg-danger bg-opacity-10 px-2 py-1 rounded d-inline-block">
+                                            <i class="bi bi-box-arrow-right me-1"></i> {{ $activity->logout_time->format('H:i:s') }}
+                                        </div>
                                     @else
-                                        <span class="text-muted">-</span>
+                                        <span class="text-muted"><i class="bi bi-dash-lg"></i></span>
                                     @endif
                                 </td>
                             </tr>
@@ -659,10 +486,10 @@
                 <div class="pagination-section">
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                         <div class="pagination-info">
-                            Showing <strong>{{ $activities->firstItem() }}</strong> to <strong>{{ $activities->lastItem() }}</strong> 
-                            of <strong>{{ $activities->total() }}</strong> activities
+                            Menampilkan <strong>{{ $activities->firstItem() }}</strong> sampai <strong>{{ $activities->lastItem() }}</strong> 
+                            dari <strong>{{ number_format($activities->total()) }}</strong> data
                         </div>
-                        <div class="pagination-container">
+                        <div class="pagination-container m-0">
                             {{ $activities->appends(request()->except('page'))->onEachSide(1)->links('vendor.pagination.bootstrap-5') }}
                         </div>
                     </div>
@@ -670,11 +497,11 @@
             @endif
         @else
             <div class="empty-state">
-                <i class="bi bi-activity empty-icon"></i>
-                <h4>No Activities Found</h4>
-                <p>No activity logs match your current filters</p>
-                <a href="{{ route('admin.log') }}" class="btn btn-primary mt-2">
-                    <i class="bi bi-arrow-clockwise me-2"></i>Reset Filters
+                <i class="bi bi-inbox empty-icon d-block"></i>
+                <h4 class="fw-bold text-dark">Tidak Ada Aktivitas</h4>
+                <p class="text-muted mb-4">Belum ada log aktivitas atau tidak ada data yang cocok dengan filter Anda.</p>
+                <a href="{{ route('admin.log') }}" class="btn search-btn d-inline-flex px-4 py-2">
+                    <i class="bi bi-arrow-clockwise me-2"></i> Reset Filter
                 </a>
             </div>
         @endif
@@ -685,53 +512,63 @@
 @push('scripts')
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+    // Inisialisasi Tooltip
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
     // TomSelect for user search
-    new TomSelect("#user-search", {
-        valueField: 'id',
-        labelField: 'text',
-        searchField: 'text',
-        create: false,
-        plugins: ['remove_button'],
-        placeholder: 'Select / Search User',
-        maxOptions: 20,
-        allowEmptyOption: true,
-        load: function(query, callback) {
-            if (!query.length) return callback();
-            fetch(`/admin/log/user-search?q=${encodeURIComponent(query)}`)
-                .then(response => response.json())
-                .then(data => {
-                    const results = data.map(item => ({
-                        id: item,
-                        text: item
-                    }));
-                    callback(results);
-                })
-                .catch(() => callback());
-        },
-        onChange: function(value) {
-            document.getElementById('userId').value = value;
-            document.getElementById('filterForm').submit();
-        }
-    });
+    if(document.getElementById('user-search')) {
+        new TomSelect("#user-search", {
+            valueField: 'id',
+            labelField: 'text',
+            searchField: 'text',
+            create: false,
+            plugins: ['clear_button'],
+            placeholder: 'Pilih / Cari User...',
+            maxOptions: 20,
+            allowEmptyOption: true,
+            load: function(query, callback) {
+                if (!query.length) return callback();
+                fetch(`/admin/log/user-search?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const results = data.map(item => ({
+                            id: item,
+                            text: item
+                        }));
+                        callback(results);
+                    })
+                    .catch(() => callback());
+            },
+            onChange: function(value) {
+                document.getElementById('userId').value = value;
+                document.getElementById('filterForm').submit();
+            }
+        });
+    }
 
     // Auto-submit status filter
     const statusSelect = document.getElementById('status');
-    statusSelect.addEventListener('change', function() {
-        this.form.submit();
-    });
+    if(statusSelect){
+        statusSelect.addEventListener('change', function() {
+            this.form.submit();
+        });
+    }
 
     // Add loading state to form
     const form = document.getElementById('filterForm');
-    const searchBtn = form.querySelector('.search-btn');
+    const searchBtns = form.querySelectorAll('button[type="submit"]');
     
     form.addEventListener('submit', function() {
-        if (searchBtn) {
-            searchBtn.innerHTML = '<i class="bi bi-search me-1"></i>Searching...';
-            searchBtn.disabled = true;
-        }
+        searchBtns.forEach(btn => {
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+            btn.disabled = true;
+        });
     });
 });
 </script>
 @endpush
-
 @endsection

@@ -33,9 +33,7 @@ class SecondProductController extends Controller
         $seconds = SecondProduct::with('images')
             ->where('status', 'ready')
             ->where('is_publish', true)
-            ->orderByDesc('selling_price')
-            ->get()
-            ->unique('sales_order_number');
+            ->get();
 
         $draftOrder = Order::with('items')
         ->where('user_id', auth()->id())
@@ -743,29 +741,15 @@ class SecondProductController extends Controller
         DB::beginTransaction();
 
         try {
+            // 1. Cari dan lock satu produk ini saja
+            $product = SecondProduct::lockForUpdate()->findOrFail($id);
 
-            $product = SecondProduct::lockForUpdate()
-                ->findOrFail($id);
-
-            $products = SecondProduct::where(
-                'sales_order_number',
-                $product->sales_order_number
-            )
-            ->lockForUpdate()
-            ->get();
-
-            // hanya bisa dibook jika READY
-            foreach ($products as $item) {
-
-                if ($item->status !== 'ready') {
-
-                    throw new \Exception(
-                        'Ada barang dalam paket yang belum ready'
-                    );
-                }
+            // 2. Validasi: hanya bisa dibook jika statusnya READY (case-insensitive aman pakai lowercase)
+            if (strtolower($product->status) !== 'ready') {
+                throw new \Exception('Barang ini belum ready atau sudah dibooking orang lain.');
             }
 
-            // draft order user
+            // 3. Ambil atau buat draft order untuk user ini
             $order = Order::firstOrCreate([
                 'user_id' => auth()->id(),
                 'status' => 'DRAFT'
@@ -773,51 +757,31 @@ class SecondProductController extends Controller
                 'customer_no' => '',
             ]);
 
-            // jangan sampai double input
+            // 4. Validasi jangan sampai double input ke dalam order items
             $alreadyExists = $order->items()
                 ->where('second_product_id', $product->id)
                 ->exists();
 
             if ($alreadyExists) {
-                throw new \Exception('Barang sudah ada di order');
+                throw new \Exception('Barang sudah ada di dalam list order Anda.');
             }
 
-            // create order item
-            foreach ($products as $item) {
-                $alreadyExists = $order->items()
-                    ->where('second_product_id', $item->id)
-                    ->exists();
+            // 5. Masukkan satu item ini ke database order items
+            $order->items()->create([
+                'second_product_id' => $product->id,
+                'accurate_item_no'  => $product->item_no,
+                'item_name'         => $product->item_name,
+                'serial_number'     => $product->serial_number,
+                'item_unit_name'    => 'PCS',
+                'quantity'          => 1,
+                'unit_price'        => $product->selling_price ?? 0,
+            ]);
 
-                if ($alreadyExists) {
-                    continue;
-                }
-
-                $order->items()->create([
-                    'second_product_id' =>
-                        $item->id,
-                    'accurate_item_no' =>
-                        $item->item_no,
-                    'item_name' =>
-                        $item->item_name,
-                    'serial_number' =>
-                        $item->serial_number,
-                    'item_unit_name' =>
-                        'PCS',
-                    'quantity' =>
-                        1,
-                    'unit_price' =>
-                        $item->selling_price ?? 0,
-                ]);
-
-                $item->update([
-                    'status' => 'booked'
-                ]);
-            }
-
-            // ubah status barang
+            // 6. Update status produk menjadi BOOKED (gunakan kapital yang konsisten)
             $product->update([
                 'status' => 'BOOKED'
             ]);
+
             DB::commit();
 
             return response()->json([
@@ -826,11 +790,10 @@ class SecondProductController extends Controller
             ]);
 
         } catch (\Exception $e) {
-
             DB::rollBack();
 
             return response()->json([
-                's' => 'error',
+                's' => 'error', // konsisten dengan response atas jika ingin ditangkap JS
                 'm' => $e->getMessage()
             ]);
         }

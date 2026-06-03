@@ -39,7 +39,13 @@ class AuthinticationController extends Controller
                     ->causedBy($user)
                     ->inLog($user->name ?? 'unknown')
                     ->log('Reseller dengan email ' . $user->email . ' sedang melakukan login');
-                return redirect()->route('reseller.index');
+                return redirect()->route('mitra.index');
+            } elseif ($user->status === 'TWINCOM PATNER') {
+                activity()
+                    ->causedBy($user)
+                    ->inLog($user->name ?? 'unknown')
+                    ->log('Reseller dengan email ' . $user->email . ' sedang melakukan login');
+                return redirect()->route('mitra.index');
 
             } elseif ($user->status === 'KARYAWAN') {
                 activity()

@@ -87,13 +87,13 @@
 
                 <div class="d-flex align-items-center gap-3">
 
-                    <a
-                        href="{{ route('second.product') }}"
-                        class="text-white text-decoration-none fw-semibold"
-                    >
-                        Barang Second/2nd
-                    </a>
                     @can('view_second-product')
+                        <a
+                            href="{{ route('second.product') }}"
+                            class="text-white text-decoration-none fw-semibold"
+                        >
+                            Barang Second/2nd
+                        </a>
                         <a
                             href="{{ route('second.indexKaryawan') }}"
                             class="text-white text-decoration-none fw-semibold"

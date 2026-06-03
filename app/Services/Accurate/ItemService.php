@@ -2,8 +2,8 @@
 
 namespace App\Services\Accurate;
 
-use Hashids\Hashids;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ItemService
 {
@@ -11,86 +11,47 @@ class ItemService
     {
         $baseUrl = rtrim(config('services.accurate.base_api'), '/');
 
-        $perPage = $request->query('per_page', 10);
-        $pageWeb = max(1, (int) $request->query('page', 1));
-        $offset  = ($pageWeb - 1) * $perPage;
+        $perPage   = (int) $request->query('per_page', 10);
+        $pageWeb   = max(1, (int) $request->query('page', 1));
+        $offset    = ($pageWeb - 1) * $perPage;
 
-        $search     = trim($request->query('search', ''));
-        $categoryId = $request->query('category_id');
-        $stokAda    = $request->query('stok_ada', '1');
+        $search    = trim($request->query('search', ''));
+        $categoryId = (array) $request->query('category_id', []); 
+        $stokAda   = $request->query('stok_ada', '1');
         $stockType = $request->query('stock_type', 'availableToSell');
-        $priceMode  = $request->query('price_mode', 'default');
+        $priceMode = $request->query('price_mode', 'default');
 
-        $minPrice = $request->filled('min_price')
-            ? floatval(str_replace(['.', ','], ['', '.'], $request->input('min_price')))
-            : null;
-
-        $maxPrice = $request->filled('max_price')
-            ? floatval(str_replace(['.', ','], ['', '.'], $request->input('max_price')))
-            : null;
-
+        $minPrice = $request->filled('min_price') ? floatval(str_replace(['.', ','], ['', '.'], $request->input('min_price'))) : null;
+        $maxPrice = $request->filled('max_price') ? floatval(str_replace(['.', ','], ['', '.'], $request->input('max_price'))) : null;
         $usePriceFilter = ($minPrice !== null || $maxPrice !== null);
-        $priceCategory  = $priceMode === 'reseller' ? 'RESELLER' : 'USER';
-
-        $targetBase = $offset + $perPage + 1;
-        $targetDeep = $perPage;
-        $maxLimit   = 1000;
-
-        $buffer     = collect();
-        $rawScanned = 0;
-        $pageAcc    = 1;
-        $rowsNeeded = $targetBase;
-
-        $priceService = app(PriceService::class);
-        $allowedCategoryIds = app(CategoryService::class)
-        ->all()
-        ->pluck('id')
-        ->flip(); // buat lookup cepat
-
-        $processRow = function ($row) use (
-            &$buffer,
-            $stokAda,
-            $stockType,
-            $usePriceFilter,
-            $minPrice,
-            $maxPrice,
-            $priceCategory,
-            $priceService,
-            $allowedCategoryIds
-        ) {
-            $itemCategoryId = $row['itemCategory']['id'] ?? null;
-
-            if (!$itemCategoryId || !isset($allowedCategoryIds[$itemCategoryId])) {
-                return false;
-            }
-
-            $currentStock = $row[$stockType] ?? 0;
-
-            if ($stokAda === '1' && $currentStock <= 0) {
-                return false;
-            }
-
-            if ($usePriceFilter) {
-                $price = $priceService->get($row['id'], $priceCategory);
-
-                if ($minPrice !== null && $price < $minPrice) return;
-                if ($maxPrice !== null && $price > $maxPrice) return;
-
-                $row['price'] = $price;
-            }
-
-            $row['selected_stock'] = $currentStock;
-
-            $buffer->push($row);
+        $priceCategory = match ($priceMode) {
+            'reseller'        => 'RESELLER',
+            'patner'          => 'TWINCOM PATNER', // Sesuai dengan string penamaan di database/Accurate Anda
+            default           => 'USER',
         };
 
-        while ($buffer->count() < $rowsNeeded && $rawScanned < $maxLimit) {
+        // Batasi target pencarian memori agar PHP tidak overload
+        $rowsNeeded = $offset + $perPage;
+        $maxLimit   = 500; // Dikurangi dari 1000 agar mempercepat respon jika stok banyak yang 0
+
+        $buffer     = [];
+        $rawScanned = 0;
+        $pageAcc    = 1;
+
+        // OPTIMASI 1: Ambil data kategori sekali saja dan simpan di cache pendek (5 menit)
+        // Ini memangkas query DB internal berulang kali setiap hit request web
+        $allowedCategoryIds = Cache::remember('acc_category_lookup', 300, function () {
+            return app(CategoryService::class)->all()->pluck('id')->flip()->toArray();
+        });
+
+        // Loop mengambil data langsung dari Accurate secara real-time
+        while (count($buffer) < $rowsNeeded && $rawScanned < $maxLimit) {
 
             $query = [
-                'sp.page'         => $pageAcc,
-                'sp.pageSize'     => 100,
-                'fields'          => 'id,name,no,availableToSell,itemCategory.name,availableToSellInAllUnit,itemCategory,allQuantity',
-                'filter.suspended'=> false,
+                'sp.page'          => $pageAcc,
+                'sp.pageSize'      => 100, // Maksimalkan ukuran page API agar jaringannya efisien
+                'fields'           => 'id,name,no,availableToSell,itemCategory,availableToSellInAllUnit',
+                'filter.suspended' => false,
             ];
 
             if ($search !== '') {
@@ -109,40 +70,81 @@ class ItemService
             if (!$resp->successful()) break;
 
             $json = $resp->json();
-            $rows = collect($json['d'] ?? []);
-            $sp   = $json['sp'] ?? [];
+            $rows = $json['d'] ?? [];
+            
+            if (empty($rows)) break;
 
-            $rawScanned += $rows->count();
-
-            if ($rows->isEmpty()) break;
+            $rawScanned += count($rows);
 
             foreach ($rows as $row) {
-                $processRow($row);
-                if ($buffer->count() >= $rowsNeeded) break;
+                $itemCategoryId = $row['itemCategory']['id'] ?? null;
+
+                if (!$itemCategoryId || !isset($allowedCategoryIds[$itemCategoryId])) {
+                    continue;
+                }
+
+                $currentStock = $row[$stockType] ?? 0;
+                if ($stokAda === '1' && $currentStock <= 0) {
+                    continue;
+                }
+
+                $row['selected_stock'] = $currentStock;
+                $row['category_id']    = $itemCategoryId;
+
+                // ==========================================
+                // 🔥 PERBAIKAN LOGIKA FILTER HARGA DI SINI
+                // ==========================================
+                if ($usePriceFilter) {
+                    // Karena user butuh filter harga, kita TERPAKSA cek harga sekarang
+                    // agar kalau harganya tidak sesuai, kita bisa lanjut scan barang berikutnya
+                    $price = app(PriceService::class)->get($row['id'], $priceCategory);
+
+                    if ($minPrice !== null && $price < $minPrice) continue;
+                    if ($maxPrice !== null && $price > $maxPrice) continue;
+
+                    // Simpan harganya agar di bawah tidak perlu hit service lagi
+                    $row['price'] = $price; 
+                }
+
+                // Masukkan ke buffer HANYA JIKA lolos semua filter
+                $buffer[] = $row;
+
+                if (count($buffer) >= $rowsNeeded) {
+                    break;
+                }
             }
 
             if (($json['sp']['pageCount'] ?? 0) <= $pageAcc) break;
             $pageAcc++;
         }
 
-        $totalFiltered = $buffer->count();
-        $items         = $buffer->slice($offset, $perPage)->values();
-        $hasMore       = $totalFiltered > ($offset + $items->count());
+        // OPTIMASI 4: Paginasi dan Filter Harga dilakukan HANYA pada data yang lolos (maksimal 10-20 item saja)
+        $slicedItems = array_slice($buffer, $offset, $perPage);
+        $finalItems  = [];
+        
+        // Kita panggil service harga sekali saja di luar loop jika diperlukan
+        $priceService = app(PriceService::class);
 
-        $items = $items->map(function ($item) {
+        foreach ($slicedItems as $item) {
+            // Jika user tadi TIDAK pakai filter harga, array 'price' belum ada.
+            // Maka kita ambil harganya di sini (super cepat karena maksimal cuma 10 kali)
+            if (!isset($item['price'])) {
+                $item['price'] = $priceService->get($item['id'], $priceCategory);
+            }
+            
+            $finalItems[] = $item;
+        }
 
-            $item['category_id'] = $item['itemCategory']['id'] ?? null;
-
-            return $item;
-        });
+        $totalFiltered = count($buffer);
+        $hasMore       = $totalFiltered >= $rowsNeeded;
 
         return [
-            'rows'       => $sp ?? [],
-            'items'      => $items,
+            'rows'       => $json['sp'] ?? [],
+            'items'      => $finalItems,
             'page'       => $pageWeb,
             'pageCount'  => $hasMore ? $pageWeb + 1 : $pageWeb,
             'totalItems' => $totalFiltered,
-            'filters'    => compact('search', 'categoryId', 'stokAda','stockType', 'minPrice', 'maxPrice', 'priceMode'),
+            'filters'    => compact('search', 'categoryId', 'stokAda', 'stockType', 'minPrice', 'maxPrice', 'priceMode'),
         ];
     }
 }

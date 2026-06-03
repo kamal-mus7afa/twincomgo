@@ -408,7 +408,6 @@
                                     {{ strtoupper($unitName) }}
                                 </div>
                                 <div class="text-end">
-                                    {{dd($catId)}}
                                     @if(isset($p['user']) && $p['user'] > 0 && !in_array((int) $catId, [52706, 52850, 52800]))
                                         <div class="text-muted" style="text-decoration: line-through;">
                                             Rp {{ number_format($p['user'], 0, ',', '.') }}

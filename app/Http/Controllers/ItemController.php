@@ -45,18 +45,25 @@ class ItemController extends Controller
     }
 
     // ===============================
-    //           AJAX PRICE
+    //         AJAX PRICE
     // ===============================
     public function ajaxPrice(
         Request $request,
         PriceService $prices
     ) {
-        $id   = (int) $request->query('id');
-        $mode = $request->query('mode', 'USER');
+        $id      = (int) $request->query('id');
+        $rawMode = $request->query('mode', 'default'); 
 
         if (!$id) {
             return response()->json(['price' => 0]);
         }
+
+        // Tangkap kedua kemungkinan kata kunci
+        $mode = match (strtolower($rawMode)) {
+            'reseller'                 => 'RESELLER',
+            'patner', 'twincom patner' => 'TWINCOM PATNER', // ✅ Tambahkan 'twincom patner' di sini
+            default                    => 'USER',
+        };
 
         return response()->json([
             'price' => $prices->get($id, $mode),
@@ -65,7 +72,7 @@ class ItemController extends Controller
     }
 
     // ===============================
-    //            EXPORT PDF
+    //          EXPORT PDF
     // ===============================
     public function exportPdf1(
         Request $request,
@@ -78,7 +85,8 @@ class ItemController extends Controller
             ? 'RESELLER'
             : 'USER';
 
-        $itemsWithPrice = $data['items']->map(function ($item) use ($prices, $priceCategory) {
+        // PERBAIKAN: Bungkus $data['items'] dengan collect()
+        $itemsWithPrice = collect($data['items'])->map(function ($item) use ($prices, $priceCategory) {
             $item['price'] = $prices->get($item['id'], $priceCategory);
             return $item;
         });

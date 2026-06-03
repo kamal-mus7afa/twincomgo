@@ -31,6 +31,7 @@
             <select name="price_mode" class="form-select shadow-sm">
                 <option value="default" {{ request('price_mode', 'default') == 'default' ? 'selected' : '' }}>User</option>
                 <option value="reseller" {{ request('price_mode') == 'reseller' ? 'selected' : '' }}>Reseller</option>
+                <option value="patner" {{ request('price_mode') == 'patner' ? 'selected' : '' }}>Twincom Patner</option>
             </select>
         </div>
         

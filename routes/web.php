@@ -14,7 +14,6 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\SecondProductController;
 use App\Http\Controllers\ResellerController;
 use App\Http\Controllers\TestController;
-use App\Models\Order;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -92,9 +91,7 @@ Route::middleware(['auth', 'role:KARYAWAN'])->group(function () {
     Route::get('/karyawan/{encrypted}/export-pdf', [KaryawanController::class, 'exportPdf'])->name('karyawan.exportPdf');
     Route::get('/karyawan/{id}/price', [KaryawanController::class, 'getPrice']);
 
-    // AJAX
-    Route::get('/ajax/item-image', [KaryawanController::class, 'getItemImage'])->name('ajax.item.image');
-    Route::get('/ajax/price', [ItemController::class, 'ajaxPrice'])->name('ajax.price');
+    
 
 });
 
@@ -106,14 +103,11 @@ Route::middleware(['auth', 'role:KARYAWAN'])->group(function () {
 Route::middleware(['auth', 'role:admin'])->group(function () {
 
     Route::get('/admin-dashboard', [AdminController::class, 'index'])->name('admin.index');
-
     Route::get('/admin/item', [AdminController::class, 'indexItems'])->name('admin.items');
     Route::get('/admin/detail/{encrypted}', [AdminController::class, 'showItems'])->name('admin.detail');
-
     Route::get('/admin-user', [AdminController::class, 'viewUser'])->name('admin.user');
     Route::get('/admin-log', [AdminController::class, 'logActivity'])->name('admin.log');
     Route::get('/admin/log/user-search', [AdminController::class, 'searchUser'])->name('admin.log.user-search');
-
     Route::post('/auto-logout', [AdminController::class, 'autoLogout'])->name('auto.logout');
 
     // USER CRUD
@@ -160,12 +154,22 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 | RESELLER
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'reseller'])->group(function () {
+/*
+|--------------------------------------------------------------------------
+| RESELLER & PARTNER (DIGABUNG)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
 
-    Route::get('/reseller', [ResellerController::class, 'index2'])->name('reseller.index');
-    Route::get('/reseller/test', [ResellerController::class, 'index'])->name('reseller.test');
-    Route::get('/reseller/{encrypted}', [ResellerController::class, 'show'])->name('reseller.detail');
-
+    // Gunakan satu prefix (misal: mitra) dan izinkan kedua role
+    Route::middleware(['role:RESELLER,TWINCOM PATNER'])->prefix('mitra')->name('mitra.')->group(function () {
+        Route::get('/', [ResellerController::class, 'index2'])->name('index');
+        Route::get('/test', [ResellerController::class, 'index'])->name('test');
+        Route::get('/{encrypted}', [ResellerController::class, 'show'])->name('detail');
+        
+        // Rute AJAX bisa ditaruh di dalam sini juga
+        });
+        
     Route::get('/ajax/priceReseller', [ResellerController::class, 'ajaxPriceReseller'])->name('ajax.price.reseller');
 });
 
@@ -225,6 +229,12 @@ Route::middleware(['auth', 'role:admin,KARYAWAN'])->group(function () {
     Route::get("/order", [OrderController::class, 'orderList']);
     Route::post('/order/{id}/deal', [OrderController::class, 'deal'])->name('order.deal');
     Route::post('/order/{id}/cancel', [OrderController::class, 'cancel'])->name('order.cancel');
+
+    // AJAX
+    Route::get('/ajax/item-image', [KaryawanController::class, 'getItemImage'])->name('ajax.item.image');
+    Route::get('/ajax/price', [ItemController::class, 'ajaxPrice'])->name('ajax.price');
 });
 
+
+Route::get("/test/customer", [CustomerController::class, 'customer']);
 

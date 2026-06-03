@@ -24,7 +24,8 @@ class User extends Authenticatable
         'email',
         'password',
         'accurate_account_id',
-        'status'
+        'status',
+        'kategori_penjualan'
     ];
 
     /**

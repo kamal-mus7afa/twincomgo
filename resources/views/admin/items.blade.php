@@ -1,309 +1,199 @@
 @extends(Auth::check() && Auth::user()->status === 'admin' ? 'layouts.admin' : 'layouts.app')
 
-@section('title', 'Daftar Produk')
+@section('title', 'Barang & Jasa')
 
 @section('content')
+
+@push('styles')
 <style>
-    /* ===== VARIABLES ===== */
+    /* ===== PREMIUM SAAS DESIGN SYSTEM ===== */
     :root {
-        --primary: #6366f1;
-        --primary-dark: #4f46e5;
+        --primary: #4f46e5;
+        --primary-hover: #4338ca;
+        --primary-light: #e0e7ff;
+        
         --success: #10b981;
+        --success-light: #d1fae5;
         --warning: #f59e0b;
+        --warning-light: #fef3c7;
         --danger: #ef4444;
-        --info: #06b6d4;
-        --dark: #1e293b;
-        --light: #f8fafc;
+        --danger-light: #fee2e2;
+        --info: #0ea5e9;
+        --info-light: #e0f2fe;
+        
+        --dark: #0f172a;
+        --secondary: #64748b;
+        --bg-surface: #ffffff;
+        --bg-light: #f8fafc;
+        --border-color: #e2e8f0;
     }
 
-    /* ===== HEADER SECTION ===== */
+    /* ===== PAGE HEADER ===== */
     .page-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 20px;
-        padding: 30px;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
-        position: relative;
-        overflow: hidden;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 16px;
     }
-
-    .page-header::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 200px;
-        height: 200px;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-    }
-
-    .header-content {
-        position: relative;
-        z-index: 2;
-    }
-
-    .page-header h1 {
-        font-size: 2.2rem;
+    .header-content h1 {
+        font-size: 24px;
         font-weight: 800;
-        margin-bottom: 0.5rem;
-        background: linear-gradient(90deg, #fff, #e0e7ff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--dark);
+        margin-bottom: 6px;
+        letter-spacing: -0.5px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
-
     .page-description {
-        font-size: 1.1rem;
-        opacity: 0.9;
-        margin-bottom: 0;
+        color: var(--secondary);
+        margin: 0;
+        font-size: 14.5px;
     }
 
-    /* ===== STATS CARDS ===== */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
-        margin-bottom: 2rem;
-    }
-
-    .stat-item {
-        background: white;
+    /* ===== PANEL CARD ===== */
+    .panel-card {
+        background: var(--bg-surface);
         border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        border-left: 4px solid var(--primary);
-        transition: all 0.3s ease;
-        cursor: pointer;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+        overflow: visible; /* Important for TomSelect dropdowns */
+        margin-bottom: 24px;
     }
-
-    .stat-item:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-    }
-
-    .stat-item:nth-child(2) { border-left-color: var(--success); }
-    .stat-item:nth-child(3) { border-left-color: var(--info); }
-    .stat-item:nth-child(4) { border-left-color: var(--warning); }
-
-    .stat-number {
-        font-size: 2rem;
-        font-weight: 800;
-        color: var(--dark);
-        line-height: 1;
-        margin-bottom: 5px;
-    }
-
-    .stat-label {
-        color: #64748b;
-        font-weight: 600;
-        font-size: 0.9rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    /* ===== FILTER CARD ===== */
-    .filter-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        border-radius: 20px;
-        padding: 25px;
-        box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
-        margin-bottom: 2rem;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-
-    .filter-header {
+    .panel-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #f1f5f9;
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
+        justify-content: space-between;
         flex-wrap: wrap;
-        gap: 15px;
+        gap: 16px;
+        background: var(--bg-surface);
+        border-radius: 16px 16px 0 0;
     }
-
-    .filter-title {
+    .panel-header-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .panel-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+    .panel-title {
+        font-size: 16px;
         font-weight: 700;
         color: var(--dark);
+        margin: 0 0 2px 0;
+    }
+    .panel-subtitle {
+        font-size: 13px;
+        color: var(--secondary);
         margin: 0;
-        display: flex;
+    }
+    .panel-body {
+        padding: 24px;
+    }
+    .panel-footer {
+        padding: 16px 24px;
+        background: var(--bg-light);
+        border-top: 1px solid var(--border-color);
+        border-radius: 0 0 16px 16px;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn-outline-tool {
+        background: white;
+        color: var(--secondary);
+        border: 1px solid var(--border-color);
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 13.5px;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
         align-items: center;
-        gap: 10px;
+        justify-content: center;
+        gap: 8px;
     }
-
-    .filter-actions {
-        display: flex;
-        gap: 10px;
-        align-items: center;
+    .btn-outline-tool:hover {
+        background: var(--bg-light);
+        color: var(--dark);
+        border-color: #cbd5e1;
     }
-
-    /* .form-control, .form-select {
-        border-radius: 12px;
-        border: 2px solid #e2e8f0;
-        padding: 12px 15px;
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
+    .btn-export {
+        background: white;
+        color: var(--danger);
+        border: 1px solid var(--danger-light);
     }
-
-    .form-control:focus, .form-select:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
-        transform: translateY(-2px);
+    .btn-export:hover {
+        background: var(--danger-light);
+        color: var(--danger);
+        border-color: var(--danger);
     }
-
-    .input-group-text {
-        border-radius: 12px 0 0 12px;
-        border: 2px solid #e2e8f0;
-        border-right: none;
-        background: #f8fafc;
-    } */
-
+    
+    /* Tombol Search & Reset di dalam partials filter */
     .search-btn {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        border: none;
-        border-radius: 12px;
+        background: var(--dark);
         color: white;
-        padding: 12px 20px;
+        border-radius: 10px;
         font-weight: 600;
-        transition: all 0.3s ease;
+        padding: 10px 20px;
+        transition: all 0.2s;
+        border: none;
     }
-
-    .search-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-        color: white;
-    }
-
+    .search-btn:hover { background: #1e293b; color: white; transform: translateY(-1px); }
     .reset-btn {
-        background: #64748b;
-        border: none;
-        border-radius: 12px;
-        color: white;
-        padding: 12px 20px;
-        transition: all 0.3s ease;
-    }
-
-    .reset-btn:hover {
-        background: #475569;
-        transform: translateY(-2px);
-        color: white;
-    }
-
-    .export-btn {
-        background: linear-gradient(135deg, #dc2626, #b91c1c);
-        border: none;
-        border-radius: 12px;
-        color: white;
-        padding: 12px 20px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .export-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
-        color: white;
-    }
-
-    /* ===== TABLE SECTION ===== */
-    .table-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        border-radius: 20px;
-        box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-
-    .table-header {
-        background: linear-gradient(135deg, #1e293b 0%, #374151 100%);
-        color: white;
-        padding: 20px 25px;
-        border: none;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-
-    .table-header h3 {
-        font-weight: 700;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 1.5rem;
-    }
-
-    .table-controls {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-    }
-
-    .per-page-select {
-        width: 80px;
+        background: white;
+        color: var(--secondary);
+        border: 1px solid var(--border-color);
         border-radius: 10px;
-        border: none;
-        padding: 8px;
+        padding: 10px 20px;
+        transition: all 0.2s;
         font-weight: 600;
     }
+    .reset-btn:hover { background: #f1f5f9; color: var(--dark); }
 
+    /* ===== MODERN TABLE (FOR PARTIALS) ===== */
     .table-container {
+        width: 100%;
+        overflow-x: auto;
         max-height: 600px;
-        overflow-y: auto;
-        scrollbar-width: thin;
-        scrollbar-color: var(--primary) #f1f5f9;
     }
-
-    .table-container::-webkit-scrollbar {
-        width: 8px;
-    }
-
-    .table-container::-webkit-scrollbar-track {
-        background: #f1f5f9;
-        border-radius: 10px;
-    }
-
-    .table-container::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        border-radius: 10px;
-    }
-
-    .table {
-        margin: 0;
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-
+    .table { margin: 0; width: 100%; border-collapse: separate; border-spacing: 0; }
     .table thead th {
-        background: #f8fafc;
-        color: #64748b;
+        background: var(--bg-light);
+        color: var(--secondary);
+        font-size: 12px;
         font-weight: 700;
         text-transform: uppercase;
-        font-size: 0.8rem;
         letter-spacing: 0.5px;
-        border-bottom: 2px solid #e2e8f0;
-        padding: 20px;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border-color);
+        white-space: nowrap;
         position: sticky;
         top: 0;
         z-index: 10;
     }
-
-    .table tbody tr {
-        transition: all 0.3s ease;
-        border-bottom: 1px solid #f1f5f9;
-    }
-
-    .table tbody tr:hover {
-        background: #f8fafc;
-        transform: scale(1.01);
-    }
-
+    .table tbody tr { transition: background 0.2s; }
+    .table tbody tr:hover td { background: var(--bg-light); }
     .table tbody td {
-        padding: 15px;
+        padding: 16px 20px;
         vertical-align: middle;
-        border: none;
-        font-weight: 500;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
     }
+    .table tbody tr:last-child td { border-bottom: none; }
 
     .td-harga {
         width: 150px;
@@ -312,395 +202,208 @@
     }
     .harga-grid {
         display: grid;
-        grid-template-columns: 30px 1fr; /* Rp selalu 30px, nominal menyesuaikan */
+        grid-template-columns: 30px 1fr;
         justify-content: end;
         align-items: center;
+        font-weight: 600;
     }
-    .harga-rp {
-        text-align: left;
-    }
+    .harga-rp { text-align: left; color: var(--secondary); font-size: 12px; }
+    .harga-nominal { text-align: right; color: var(--success); }
 
-    .harga-nominal {
-        text-align: right;
-    }
-
-    /* ===== PRODUCT IMAGE ===== */
+    /* Product Images */
     .product-image-sm {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
         object-fit: cover;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
     }
-
     .product-image-placeholder {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        background: var(--bg-light);
+        border: 1px dashed #cbd5e1;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
-        font-weight: 700;
-        font-size: 24px;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        color: var(--secondary);
+        font-weight: 600;
+        font-size: 18px;
     }
 
-    /* ===== BADGES ===== */
+    /* Badges */
     .status-badge {
-        padding: 8px 16px;
-        border-radius: 20px;
+        padding: 6px 12px;
+        border-radius: 50px;
         font-weight: 700;
-        font-size: 0.8rem;
+        font-size: 11px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
+    .badge-available { background: var(--success-light); color: var(--success); }
+    .badge-lowstock { background: var(--warning-light); color: #d97706; }
+    .badge-soldout { background: var(--danger-light); color: var(--danger); }
 
-    .badge-available {
-        background: rgba(16, 185, 129, 0.1);
-        color: var(--success);
-        border: 1px solid rgba(16, 185, 129, 0.2);
-    }
-
-    .badge-lowstock {
-        background: rgba(245, 158, 11, 0.1);
-        color: var(--warning);
-        border: 1px solid rgba(245, 158, 11, 0.2);
-    }
-
-    .badge-soldout {
-        background: rgba(239, 68, 68, 0.1);
-        color: var(--danger);
-        border: 1px solid rgba(239, 68, 68, 0.2);
-    }
-
-    /* ===== PRICE TAG ===== */
-    .price-tag {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: white;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-weight: 700;
-        font-size: 0.9rem;
-        display: inline-block;
-    }
-
-    /* ===== PAGINATION ===== */
-    .pagination-section {
-        background: #f8fafc;
-        border-top: 1px solid #e2e8f0;
-        padding: 20px 25px;
-        border-radius: 0 0 20px 20px;
-    }
-
-    .pagination-info {
-        color: #64748b;
-        font-weight: 500;
-    }
-
-    .pagination {
-        margin: 0;
-        gap: 5px;
-    }
-
-    .page-link {
-        border-radius: 10px !important;
-        border: none;
-        padding: 8px 14px;
-        color: var(--dark);
+    /* Controls */
+    .per-page-select {
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        padding: 6px 30px 6px 12px;
+        font-size: 13px;
         font-weight: 600;
-        transition: all 0.3s ease;
+        background-color: var(--bg-light);
+        color: var(--dark);
     }
 
+    /* ===== PAGINATION (FOR PARTIALS) ===== */
+    .pagination-info { font-size: 13.5px; color: var(--secondary); }
+    .pagination { margin: 0; gap: 4px; }
+    .page-link {
+        border-radius: 8px !important;
+        border: 1px solid transparent;
+        padding: 6px 12px;
+        color: var(--secondary);
+        font-weight: 600;
+        font-size: 13px;
+        transition: all 0.2s;
+    }
     .page-link:hover {
+        background: var(--bg-light);
+        border-color: var(--border-color);
+        color: var(--dark);
+    }
+    .page-item.active .page-link {
         background: var(--primary);
         color: white;
-        transform: translateY(-2px);
+        border-color: var(--primary);
     }
+    .page-item.disabled .page-link { color: #cbd5e1; background: transparent; }
 
-    .page-item.active .page-link {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        border: none;
-    }
-
-    /* ===== EMPTY STATE ===== */
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        color: #64748b;
-    }
-
-    .empty-icon {
-        font-size: 4rem;
-        margin-bottom: 1rem;
-        opacity: 0.5;
-    }
-
-    .empty-state h4 {
-        color: #475569;
-        margin-bottom: 0.5rem;
+    /* ===== LOADING OVERLAY ===== */
+    #item-container { position: relative; min-height: 200px; }
+    .loading-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 100;
+        border-radius: 0 0 16px 16px;
     }
 
     /* ===== ANIMATIONS ===== */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    @keyframes slideUpFade {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
     }
+    .animate-card { animation: slideUpFade 0.5s ease backwards; }
 
-    .animate-card {
-        animation: fadeInUp 0.6s ease-out;
-    }
-
-    /* ===== LOADING OVERLAY ===== */
-    .loading-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(5px);
-        z-index: 100;
-        border-radius: 20px;
-    }
-
-    #item-container {
-        position: relative;
-        min-height: 200px;
-    }
-
-    /* ===== RESPONSIVE ===== */
+    /* ===== RESPONSIVE & MOBILE LIST ===== */
     @media (max-width: 767.98px) {
-        body {
-            font-size: 12px;
-        }
-
-        .page-wrapper {
-            padding-left: 0.75rem !important;
-            padding-right: 0.75rem !important;
-        }
-
-        .table-card {
-            background: none !important;
-            box-shadow: none !important;
-        }
-
-        .table-header {
-            border-radius: 20px;
-            margin-bottom: 10px;
-        }
-
-        .table-header h3{
-            font-size: 1rem;
-        }
-
-        .per-page-select {
-            width: 50px !important;
-        }
-
-        #header-total-items {
-            width: auto !important;
-        }
-
-        .pagination {
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 6px;
-            font-size: 12px;
-        }
-
-        .pagination .page-item {
-            flex: 1 1 auto;
-            text-align: center;
-        }
-
-        .pagination .page-link {
-            padding: 6px 8px;
-            border-radius: 10px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        /* 🔹 Buat tombol prev/next jadi besar dan mudah diklik */
-        .pagination .page-link-ajax {
-            min-width: 60px;
-        }
-
-        /* 🔹 Ganti tampilan halaman aktif */
-        .pagination .page-item.disabled .page-link {
-            background: transparent;
-            color: #6c757d;
-            border: none;
-            font-weight: 500;
-        }
-
-        /* 🔹 Tambahkan shadow halus biar tampil modern */
-        .pagination .page-link {
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        /* 🔹 Sedikit jarak dari elemen bawah */
-        nav {
-            margin-top: 10px;
-        }
-
-        /* 🔹 Form filter di atas */
-        .form-label,
-        .form-select,
-        .form-control,
-        .input-group-text {
-            font-size: 10px !important;
-        }
-
-        .form-select,
-        .form-control {
-            padding: 4px 6px;
-            height: auto;
-        }
-
-        /* 🔹 Tombol pencarian kecil */
-        .btn {
-            font-size: 10px;
-            padding: 5px 8px;
-        }
-
-        /* 🔹 Sembunyikan tabel di mobile */
-        .desktop-table {
-            display: none !important;
-        }
-
-        /* 🔹 Style card produk di mobile */
+        body { font-size: 13px; }
+        .page-header { text-align: left; }
+        
+        .panel-card { border-radius: 16px; border: none; box-shadow: none; background: transparent; margin-bottom: 16px; }
+        .panel-header { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .panel-body { background: transparent; padding: 0; }
+        
+        /* Mobile Product Card */
+        .desktop-table { display: none !important; }
         .product-card {
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            border-radius: 20px;
-            padding: 0.8rem;
-            background: rgba(255, 255, 255, 0.96);
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            margin-bottom: 12px;
         }
-
-        /* BARIS: Judul + Harga */
-        .product-card .top-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 6px;
-        }
-
-        .harga-rp {
-            font-size: 12px;
-        }
-
-        .harga-nominal {
-            font-size: 12px;
-            color: #000;
-        }
-
-        .product-meta {
-            font-size: 10px;
-            color: #6b7280;
-        }
-
-        .btn-detail {
-            font-size: 10px;
-            padding: 4px 8px;
-        }
-
-        .product-card .d-flex {
-            flex-wrap: wrap;
-            align-items: flex-start;
-        }
-
+        .product-card .top-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
         .product-title {
-            flex: 1 1 75%; /* biar teks ambil ruang 65% */
-            min-width: 0; /* biar teks bisa wrap */
-            font-size: 10px;
-            font-weight: 600;
-            color: #111;
-            line-height: 1.3;
-            word-break: break-word;
-            white-space: normal;
-            overflow-wrap: anywhere;
+            flex: 1 1 70%;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--dark);
+            line-height: 1.4;
         }
-
-        .harga-grid {
-            flex: 0 0 25%; /* biar harga di kanan tetap sempit */
-            text-align: right;
-        }
-
-        .product-code {
-            font-size: 9px;
-            color: #888;
-            letter-spacing: 0.3px;
-        }
-
-        .pagination-section {
-            background: none !important;
-            border-top: none !important;
-        }
+        .harga-grid { flex: 0 0 30%; text-align: right; }
+        .harga-rp { font-size: 11px; }
+        .harga-nominal { font-size: 13px; color: var(--success); }
+        .product-code { font-size: 11px; color: var(--secondary); font-family: monospace; background: var(--bg-light); padding: 2px 6px; border-radius: 4px; }
+        .product-meta { font-size: 11px; color: var(--secondary); margin-top: 8px; }
+        
+        /* Form & Controls tweaks */
+        .per-page-select { width: 70px !important; padding: 4px 20px 4px 8px; font-size: 12px; }
+        
+        .pagination-section { background: transparent; padding: 16px 0; border: none; }
+        .pagination { flex-wrap: wrap; justify-content: center; gap: 6px; }
+        .pagination .page-link-ajax { min-width: 40px; text-align: center; background: #fff; border: 1px solid var(--border-color); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
     }
     @media (min-width: 768px) {
-        .mobile-list {
-            display: none;
-        }
+        .mobile-list { display: none; }
     }
 </style>
+@endpush
 
 <div class="container-fluid py-4">
 
     {{-- HEADER SECTION --}}
-    <div class="page-header animate-card">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <div class="page-header animate-card" style="animation-delay: 0.1s">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 w-100">
             <div class="header-content">
                 <h1>
-                    <i class="bi bi-box-seam me-3"></i>Daftar Produk
+                    <i class="bi bi-box-seam text-primary me-2"></i> Barang & Jasa
                 </h1>
-                <p class="page-description">Kelola dan pantau semua produk yang tersedia</p>
+                <p class="page-description">Kelola, cari, dan pantau seluruh data inventori produk di sistem.</p>
             </div>
         </div>
     </div>
 
     {{-- FILTER SECTION --}}
-    <div class="bg-white rounded-4 p-4 shadow-sm mb-4" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
-        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-            <h5 class="fw-bold text-dark mb-0">
-                <i class="bi bi-funnel me-2"></i>Filter & Search Products
-            </h5>
+    <div class="panel-card animate-card" style="animation-delay: 0.2s">
+        <div class="panel-header">
+            <div class="panel-header-left">
+                <div class="panel-icon">
+                    <i class="bi bi-funnel-fill"></i>
+                </div>
+                <div>
+                    <h2 class="panel-title">Filter & Pencarian</h2>
+                    <p class="panel-subtitle">Gunakan filter di bawah untuk menemukan produk spesifik.</p>
+                </div>
+            </div>
             
             {{-- DESKTOP EXPORT --}}
-            <div class="d-none d-md-flex gap-2">
-                <a href="#" id="btn-export-pdf" class="btn text-white" style="background: linear-gradient(135deg, #dc2626, #b91c1c);" data-export-url="{{ route('items.exportPdf') }}">
-                    <i class="bi bi-filetype-pdf me-2"></i>Export PDF
+            <div class="d-none d-md-block">
+                <a href="#" id="btn-export-pdf" class="btn-outline-tool btn-export" data-export-url="{{ route('items.exportPdf') }}">
+                    <i class="bi bi-filetype-pdf"></i> Export PDF
                 </a>
             </div>
         </div>
         
-        @include('items.partials.filter')
-
-        {{-- MOBILE EXPORT --}}
-        <div class="d-md-none mt-3">
-            <a href="#" id="btn-export-pdf" class="btn text-white w-100" style="background: linear-gradient(135deg, #dc2626, #b91c1c);" data-export-url="{{ route('items.exportPdf') }}">
-                <i class="bi bi-filetype-pdf me-2"></i>Export PDF
-            </a>
+        <div class="panel-body bg-light">
+            @include('items.partials.filter')
+            
+            {{-- MOBILE EXPORT --}}
+            <div class="d-md-none mt-3">
+                <a href="#" id="btn-export-pdf-mobile" class="btn-outline-tool btn-export w-100" data-export-url="{{ route('items.exportPdf') }}">
+                    <i class="bi bi-filetype-pdf"></i> Export PDF
+                </a>
+            </div>
         </div>
     </div>
 
     {{-- TABLE SECTION --}}
-    <div class="table-card animate-card" style="animation-delay: 0.3s">
-        <div class="table-header">
-            <h3>
-                <i class="bi bi-grid-3x3-gap-fill"></i>
-                List Produk
-            </h3>
-            <div class="table-controls">
-                <span class="text-white-50 text-page">Items per page:</span>
+    <div class="panel-card animate-card" style="animation-delay: 0.3s">
+        <div class="panel-header">
+            <div class="panel-header-left">
+                <div class="panel-icon bg-info bg-opacity-10 text-info">
+                    <i class="bi bi-grid-3x3-gap-fill"></i>
+                </div>
+                <div>
+                    <h2 class="panel-title">Daftar Produk</h2>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-secondary small fw-semibold d-none d-sm-inline">Tampilkan:</span>
                 <select id="per_page" class="form-select per-page-select">
                     <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10</option>
                     <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20</option>
@@ -710,12 +413,12 @@
         </div>
 
         {{-- PRODUCTS CONTAINER --}}
-        <div id="item-container">
+        <div id="item-container" class="table-container">
             @include('items.partials.item-table', ['items' => $items])
         </div>
 
         {{-- PAGINATION --}}
-        <div id="pagination-container" class="pagination-section">
+        <div id="pagination-container" class="panel-footer">
             @include('items.partials.pagination', [
                 'page' => $page,
                 'pageCount' => $pageCount,
@@ -727,18 +430,19 @@
 
 {{-- TOAST NOTIFICATION --}}
 <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 2000">
-    <div id="toastFilterError" class="toast align-items-center text-bg-warning border-0" role="alert">
-        <div class="d-flex">
-            <div class="toast-body fw-semibold">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                Filter harga terlalu sempit.<br>Perbesar rentang harganya.
+    <div id="toastFilterError" class="toast align-items-center border-0 bg-warning bg-opacity-10" role="alert">
+        <div class="d-flex border border-warning border-opacity-50 rounded-3 p-1">
+            <div class="toast-body fw-semibold text-dark d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill text-warning fs-4 me-3"></i>
+                <div>
+                    Filter harga terlalu sempit.<br>
+                    <span class="text-secondary fw-normal small">Silakan perbesar rentang harganya.</span>
+                </div>
             </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
         </div>
     </div>
 </div>
-
-@endsection
 
 @push('scripts')
 <script>
@@ -868,7 +572,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             if (!options.noScroll) {
-                window.scrollTo({ top: 0, behavior: "smooth" });
+                // Smooth scroll ke atas container tabel
+                const tableCard = document.querySelector('.table-container').parentElement;
+                window.scrollTo({ top: tableCard.offsetTop - 20, behavior: "smooth" });
             }
         } catch (err) {
             console.error(err);
@@ -919,7 +625,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // EXPORT PDF
     // ==================================
     document.addEventListener("click", function (e) {
-        const btn = e.target.closest("#btn-export-pdf");
+        const btn = e.target.closest("#btn-export-pdf, #btn-export-pdf-mobile");
         if (!btn) return;
 
         e.preventDefault();
@@ -1020,3 +726,4 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 @endpush
+@endsection

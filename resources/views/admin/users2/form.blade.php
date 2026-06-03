@@ -3,442 +3,325 @@
 @section('page-title', $user->exists ? 'Edit User' : 'Create User')
 
 @section('content')
+
+@push('styles')
 <style>
-    /* ===== VARIABLES ===== */
+    /* ===== PREMIUM SAAS DESIGN SYSTEM ===== */
     :root {
-        --primary: #6366f1;
-        --primary-dark: #4f46e5;
+        --primary: #4f46e5;
+        --primary-hover: #4338ca;
+        --primary-light: #e0e7ff;
+        
         --success: #10b981;
+        --success-light: #d1fae5;
         --warning: #f59e0b;
         --danger: #ef4444;
-        --info: #06b6d4;
-        --dark: #1e293b;
-        --light: #f8fafc;
+        --danger-light: #fee2e2;
+        --info: #0ea5e9;
+        --purple: #8b5cf6;
+        
+        --dark: #0f172a;
+        --secondary: #64748b;
+        --bg-surface: #ffffff;
+        --bg-light: #f8fafc;
+        --border-color: #e2e8f0;
     }
 
-    /* ===== HEADER SECTION ===== */
+    /* ===== PAGE HEADER ===== */
     .page-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 20px;
-        padding: 30px;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
-        position: relative;
-        overflow: hidden;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 16px;
     }
-
-    .page-header::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 200px;
-        height: 200px;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-    }
-
-    .header-content {
-        position: relative;
-        z-index: 2;
-    }
-
-    .page-header h1 {
-        font-size: 2.2rem;
+    .header-content h1 {
+        font-size: 24px;
         font-weight: 800;
-        margin-bottom: 0.5rem;
-        background: linear-gradient(90deg, #fff, #e0e7ff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .page-description {
-        font-size: 1.1rem;
-        opacity: 0.9;
-        margin-bottom: 0;
-    }
-
-    .back-btn {
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        color: white;
-        border: none;
-        border-radius: 12px;
-        padding: 12px 25px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .back-btn:hover {
-        background: rgba(255, 255, 255, 0.3);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2);
-    }
-
-    /* ===== FORM CARD ===== */
-    .form-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        border-radius: 20px;
-        padding: 40px;
-        box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .form-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, var(--primary), var(--primary-dark));
-    }
-
-    .form-header {
+        color: var(--dark);
+        margin-bottom: 6px;
+        letter-spacing: -0.5px;
         display: flex;
         align-items: center;
-        gap: 15px;
-        margin-bottom: 2.5rem;
+        gap: 10px;
     }
+    .page-description {
+        color: var(--secondary);
+        margin: 0;
+        font-size: 14.5px;
+    }
+    
+    .btn-back-pill {
+        background: #fff;
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--dark);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    .btn-back-pill:hover {
+        background: var(--bg-light);
+        border-color: #cbd5e1;
+        transform: translateY(-2px);
+    }
+    .btn-back-pill i { color: var(--primary); font-size: 1.1rem; }
 
-    .form-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 15px;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    /* ===== PANEL CARD & FORM HEADER ===== */
+    .panel-card {
+        background: var(--bg-surface);
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+    
+    .panel-header {
+        padding: 24px 32px;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .panel-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: var(--primary-light);
+        color: var(--primary);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
-        font-size: 1.5rem;
-        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        font-size: 20px;
     }
-
-    .form-title {
+    .panel-title {
+        font-size: 18px;
         font-weight: 700;
         color: var(--dark);
-        margin: 0;
-        font-size: 1.8rem;
+        margin: 0 0 4px 0;
     }
-
-    .form-subtitle {
-        color: #64748b;
+    .panel-subtitle {
+        font-size: 13.5px;
+        color: var(--secondary);
         margin: 0;
     }
 
     /* ===== FORM ELEMENTS ===== */
-    .form-section {
-        margin-bottom: 2.5rem;
+    .form-body {
+        padding: 32px;
     }
-
-    .section-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 1.5rem;
-        padding-bottom: 12px;
-        border-bottom: 2px solid #f1f5f9;
-    }
-
-    .section-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        background: rgba(99, 102, 241, 0.1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--primary);
-        font-size: 1.1rem;
-    }
-
-    .section-title {
+    .form-section-title {
+        font-size: 15px;
         font-weight: 700;
         color: var(--dark);
-        margin: 0;
-        font-size: 1.3rem;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f1f5f9;
     }
-
-    .form-group {
-        margin-bottom: 1.5rem;
-        position: relative;
-    }
-
+    
+    .form-group { margin-bottom: 24px; }
     .form-label {
+        font-size: 13.5px;
         font-weight: 600;
-        color: #374151;
+        color: var(--dark);
         margin-bottom: 8px;
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 6px;
     }
+    .required::after { content: "*"; color: var(--danger); margin-left: 2px; }
 
-    .required::after {
-        content: "*";
-        color: var(--danger);
-        margin-left: 4px;
-    }
-
-    .form-control, .form-select {
-        border-radius: 12px;
-        border: 2px solid #e2e8f0;
-        padding: 14px 16px;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        background: white;
-    }
-
-    .form-control:focus, .form-select:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 0.3rem rgba(99, 102, 241, 0.15);
-        transform: translateY(-2px);
-        background: white;
-    }
-
-    .input-with-icon {
+    /* Input Modern with Icon */
+    .modern-input-group {
         position: relative;
     }
-
-    .input-icon {
+    .modern-input-group i {
         position: absolute;
-        left: 15px;
+        left: 16px;
         top: 50%;
         transform: translateY(-50%);
-        color: #64748b;
+        color: var(--secondary);
+        font-size: 1.1rem;
         z-index: 2;
     }
-
-    .input-with-icon .form-control {
-        padding-left: 45px;
+    .modern-input {
+        width: 100%;
+        padding: 12px 16px 12px 46px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--bg-light);
+        font-size: 14px;
+        color: var(--dark);
+        transition: all 0.2s;
     }
-
+    .modern-input:focus {
+        background: #fff;
+        border-color: var(--primary);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+    
     .form-text {
-        font-size: 0.85rem;
-        color: #64748b;
-        margin-top: 6px;
+        font-size: 12.5px;
+        color: var(--secondary);
+        margin-top: 8px;
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 6px;
     }
 
-    /* ===== STATUS BADGES ===== */
-    .status-options {
+    /* ===== ROLE / STATUS SELECTOR ===== */
+    .status-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 12px;
-        margin-top: 8px;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 16px;
+        margin-top: 10px;
     }
-
-    .status-option {
-        position: relative;
-    }
-
-    .status-option input {
-        position: absolute;
-        opacity: 0;
-    }
-
-    .status-label {
+    .status-option input { display: none; }
+    .status-card {
+        border: 1.5px solid var(--border-color);
+        border-radius: 14px;
+        padding: 16px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: var(--bg-surface);
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 8px;
-        padding: 15px 10px;
-        border: 2px solid #e2e8f0;
-        border-radius: 12px;
-        background: white;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-align: center;
+        gap: 12px;
     }
-
-    .status-label:hover {
-        border-color: var(--primary);
-        transform: translateY(-2px);
+    .status-card:hover {
+        border-color: #cbd5e1;
+        background: var(--bg-light);
     }
-
-    .status-option input:checked + .status-label {
-        border-color: var(--primary);
-        background: rgba(99, 102, 241, 0.05);
-        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
-    }
-
-    .status-icon {
-        width: 40px;
-        height: 40px;
+    .status-icon-box {
+        width: 42px;
+        height: 42px;
         border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.2rem;
+        font-size: 18px;
+        background: #f1f5f9;
+        color: var(--secondary);
+        transition: all 0.2s ease;
     }
-
-    .status-admin .status-icon {
-        background: rgba(37, 99, 235, 0.1);
-        color: var(--primary);
-    }
-
-    .status-karyawan .status-icon {
-        background: rgba(16, 185, 129, 0.1);
-        color: var(--success);
-    }
-
-    .status-reseller .status-icon {
-        background: rgba(239, 68, 68, 0.1);
-        color: var(--danger);
-    }
-
-    .status-user .status-icon {
-        background: rgba(68, 213, 239, 0.1);
-        color: var(--warning);
-    }
-
     .status-name {
-        font-weight: 600;
+        font-weight: 700;
+        font-size: 14px;
         color: var(--dark);
-        font-size: 0.9rem;
     }
+    
+    /* Checked States */
+    .status-option input:checked + .status-card {
+        border-color: var(--primary);
+        background: rgba(79, 70, 229, 0.04);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08);
+    }
+    .status-option input[value="admin"]:checked + .status-card .status-icon-box { background: rgba(139,92,246,0.15); color: var(--purple); }
+    .status-option input[value="KARYAWAN"]:checked + .status-card .status-icon-box { background: var(--info-light); color: var(--info); }
+    .status-option input[value="RESELLER"]:checked + .status-card .status-icon-box { background: var(--warning-light); color: #d97706; }
+    .status-option input[value="USER"]:checked + .status-card .status-icon-box { background: var(--success-light); color: var(--success); }
 
     /* ===== BUTTONS ===== */
     .form-actions {
+        padding: 24px 32px;
+        background: var(--bg-light);
+        border-top: 1px solid var(--border-color);
         display: flex;
-        gap: 15px;
-        margin-top: 2rem;
-        padding-top: 2rem;
-        border-top: 2px solid #f1f5f9;
+        gap: 16px;
+        align-items: center;
     }
-
-    .btn {
-        border-radius: 12px;
-        padding: 14px 30px;
-        font-weight: 600;
-        font-size: 1rem;
-        transition: all 0.3s ease;
+    .btn-submit {
+        background: var(--primary);
+        color: white;
         border: none;
+        padding: 12px 28px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 14.5px;
+        transition: all 0.2s ease;
         display: flex;
         align-items: center;
         gap: 8px;
     }
-
-    .btn-primary {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        color: white;
-    }
-
-    .btn-primary:hover {
+    .btn-submit:hover {
+        background: var(--primary-hover);
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25);
     }
-
-    .btn-outline {
+    .btn-cancel {
         background: white;
-        border: 2px solid #e2e8f0;
-        color: #64748b;
+        color: var(--secondary);
+        border: 1px solid var(--border-color);
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 14.5px;
+        transition: all 0.2s ease;
+        text-decoration: none;
     }
-
-    .btn-outline:hover {
-        border-color: var(--primary);
-        color: var(--primary);
-        transform: translateY(-2px);
-    }
-
-    /* ===== ALERTS ===== */
-    .alert {
-        border-radius: 16px;
-        border: none;
-        padding: 20px 25px;
-        margin-bottom: 2rem;
-    }
-
-    .alert-danger {
-        background: rgba(239, 68, 68, 0.1);
-        color: var(--danger);
-        border: 1px solid rgba(239, 68, 68, 0.2);
-    }
-
-    .alert-icon {
-        font-size: 1.2rem;
-        margin-right: 12px;
+    .btn-cancel:hover {
+        background: #f1f5f9;
+        color: var(--dark);
     }
 
     /* ===== ANIMATIONS ===== */
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    @keyframes slideUpFade {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
     }
+    .animate-card { animation: slideUpFade 0.5s ease backwards; }
 
-    .animate-card {
-        animation: fadeInUp 0.6s ease-out;
-    }
-
-    /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
-        .page-header {
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .page-header h1 {
-            font-size: 1.8rem;
-        }
-        
-        .form-card {
-            padding: 25px;
-        }
-        
-        .form-header {
-            flex-direction: column;
-            text-align: center;
-            gap: 10px;
-        }
-        
-        .status-options {
-            grid-template-columns: 1fr;
-        }
-        
-        .form-actions {
-            flex-direction: column;
-        }
-        
-        .btn {
-            justify-content: center;
-        }
+        .form-actions { flex-direction: column; }
+        .form-actions .btn-submit, .form-actions .btn-cancel { width: 100%; justify-content: center; }
+        .form-body { padding: 20px; }
+        .panel-header { padding: 20px; }
     }
 </style>
+@endpush
 
 <div class="container-fluid py-4">
 
     {{-- HEADER SECTION --}}
     <div class="page-header animate-card">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 w-100">
             <div class="header-content">
-                <h1>{{ $user->exists ? '✏️ Edit User' : '👤 Create New User' }}</h1>
+                <h1>
+                    <i class="bi bi-person-{{ $user->exists ? 'gear' : 'plus' }} text-primary me-2"></i>
+                    {{ $user->exists ? 'Edit Data Pengguna' : 'Tambah Pengguna Baru' }}
+                </h1>
                 <p class="page-description">
-                    {{ $user->exists ? 'Update user information and permissions' : 'Add a new user to the system' }}
+                    {{ $user->exists ? 'Perbarui informasi dan hak akses pengguna ini.' : 'Daftarkan pengguna baru untuk memberikan akses ke dalam sistem.' }}
                 </p>
             </div>
-            <a href="{{ route('admin.user') }}" class="btn back-btn">
-                <i class="bi bi-arrow-left me-2"></i>Back to Users
+            <a href="{{ route('admin.user') }}" class="btn-back-pill">
+                <i class="bi bi-arrow-left"></i> <span>Kembali</span>
             </a>
         </div>
     </div>
 
     {{-- ERROR ALERT --}}
     @if($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show animate-card" style="animation-delay: 0.1s" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="bi bi-exclamation-triangle-fill alert-icon"></i>
+        <div class="alert alert-danger alert-dismissible fade show animate-card border-0 rounded-4 shadow-sm" style="animation-delay: 0.1s" role="alert">
+            <div class="d-flex align-items-start">
+                <i class="bi bi-exclamation-triangle-fill fs-4 me-3 mt-1"></i>
                 <div class="flex-grow-1">
-                    <strong>Please fix the following errors:</strong>
-                    <ul class="mt-2 mb-0 ps-3">
+                    <strong class="d-block mb-1">Mohon perbaiki kesalahan berikut:</strong>
+                    <ul class="mb-0 ps-3">
                         @foreach($errors->all() as $e)
                             <li>{{ $e }}</li>
                         @endforeach
@@ -450,14 +333,14 @@
     @endif
 
     {{-- FORM CARD --}}
-    <div class="form-card animate-card" style="animation-delay: 0.2s">
-        <div class="form-header">
-            <div class="form-icon">
-                <i class="bi bi-person-gear"></i>
+    <div class="panel-card animate-card" style="animation-delay: 0.2s">
+        <div class="panel-header">
+            <div class="panel-icon">
+                <i class="bi bi-person-lines-fill"></i>
             </div>
             <div>
-                <h2 class="form-title">{{ $user->exists ? 'Edit User' : 'Create New User' }}</h2>
-                <p class="form-subtitle">Fill in the user details below</p>
+                <h2 class="panel-title">Formulir Pengguna</h2>
+                <p class="panel-subtitle">Lengkapi form di bawah ini dengan data yang valid</p>
             </div>
         </div>
 
@@ -465,72 +348,55 @@
             @csrf
             @if($user->exists) @method('PUT') @endif
 
-            {{-- BASIC INFORMATION SECTION --}}
-            <div class="form-section">
-                <div class="section-header">
-                    <div class="section-icon">
-                        <i class="bi bi-person-vcard"></i>
-                    </div>
-                    <h3 class="section-title">Basic Information</h3>
+            <div class="form-body">
+                {{-- BASIC INFORMATION SECTION --}}
+                <div class="form-section-title">
+                    <i class="bi bi-info-circle text-primary"></i> Informasi Dasar
                 </div>
 
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label required">
+                            <label class="form-label required">Nama Lengkap</label>
+                            <div class="modern-input-group">
                                 <i class="bi bi-person"></i>
-                                Full Name
-                            </label>
-                            <div class="input-with-icon">
-                                <i class="bi bi-person input-icon"></i>
                                 <input type="text" name="name" value="{{ old('name', $user->name) }}" 
-                                       class="form-control" placeholder="Enter full name" required>
+                                       class="modern-input" placeholder="Masukkan nama lengkap" required>
                             </div>
                         </div>
                     </div>
 
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label required">
+                            <label class="form-label required">Alamat Email</label>
+                            <div class="modern-input-group">
                                 <i class="bi bi-envelope"></i>
-                                Email Address
-                            </label>
-                            <div class="input-with-icon">
-                                <i class="bi bi-envelope input-icon"></i>
                                 <input type="email" name="email" value="{{ old('email', $user->email) }}" 
-                                       class="form-control" placeholder="Enter email address" required>
+                                       class="modern-input" placeholder="email@contoh.com" required>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {{-- PASSWORD SECTION --}}
-            <div class="form-section">
-                <div class="section-header">
-                    <div class="section-icon">
-                        <i class="bi bi-shield-lock"></i>
-                    </div>
-                    <h3 class="section-title">Security</h3>
+                {{-- PASSWORD SECTION --}}
+                <div class="form-section-title mt-2">
+                    <i class="bi bi-shield-lock text-primary"></i> Kemanan Akun
                 </div>
 
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label {{ !$user->exists ? 'required' : '' }}">
+                            <label class="form-label {{ !$user->exists ? 'required' : '' }}">Kata Sandi</label>
+                            <div class="modern-input-group">
                                 <i class="bi bi-key"></i>
-                                Password
-                            </label>
-                            <div class="input-with-icon">
-                                <i class="bi bi-key input-icon"></i>
-                                <input type="password" name="password" class="form-control" 
-                                       placeholder="{{ $user->exists ? 'Leave blank to keep current' : 'Enter password' }}"
+                                <input type="password" name="password" class="modern-input" 
+                                       placeholder="{{ $user->exists ? 'Kosongkan jika tidak ingin diubah' : 'Masukkan kata sandi' }}"
                                        {{ !$user->exists ? 'required' : '' }}>
                             </div>
                             @if($user->exists)
                                 <div class="form-text">
                                     <i class="bi bi-info-circle"></i>
-                                    Leave blank to keep current password
+                                    Kosongkan field ini jika tidak ingin mengubah password lama.
                                 </div>
                             @endif
                         </div>
@@ -538,96 +404,69 @@
 
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="form-label {{ !$user->exists ? 'required' : '' }}">
+                            <label class="form-label {{ !$user->exists ? 'required' : '' }}">Konfirmasi Kata Sandi</label>
+                            <div class="modern-input-group">
                                 <i class="bi bi-key-fill"></i>
-                                Confirm Password
-                            </label>
-                            <div class="input-with-icon">
-                                <i class="bi bi-key-fill input-icon"></i>
-                                <input type="password" name="password_confirmation" class="form-control" 
-                                       placeholder="Confirm password"
+                                <input type="password" name="password_confirmation" class="modern-input" 
+                                       placeholder="Ulangi kata sandi"
                                        {{ !$user->exists ? 'required' : '' }}>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {{-- ROLE & PERMISSIONS SECTION --}}
-            <div class="form-section">
-                <div class="section-header">
-                    <div class="section-icon">
-                        <i class="bi bi-person-badge"></i>
-                    </div>
-                    <h3 class="section-title">Role & Permissions</h3>
+                {{-- ROLE & PERMISSIONS SECTION --}}
+                <div class="form-section-title mt-2">
+                    <i class="bi bi-person-badge text-primary"></i> Hak Akses & Status
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label required">
-                                <i class="bi bi-shield-check"></i>
-                                User Role
-                            </label>
-                            <div class="status-options">
-                                <div class="status-option status-admin">
-                                    <input type="radio" name="status" value="admin" id="status_admin" 
-                                           {{ old('status', $user->status) == 'admin' ? 'checked' : '' }} required>
-                                    <label class="status-label" for="status_admin">
-                                        <div class="status-icon">
-                                            <i class="bi bi-shield-check"></i>
-                                        </div>
-                                        <span class="status-name">Administrator</span>
-                                    </label>
-                                </div>
-
-                                <div class="status-option status-karyawan">
-                                    <input type="radio" name="status" value="KARYAWAN" id="status_karyawan" 
-                                           {{ old('status', $user->status) == 'KARYAWAN' ? 'checked' : '' }} required>
-                                    <label class="status-label" for="status_karyawan">
-                                        <div class="status-icon">
-                                            <i class="bi bi-person-check"></i>
-                                        </div>
-                                        <span class="status-name">Karyawan</span>
-                                    </label>
-                                </div>
-
-                                <div class="status-option status-reseller">
-                                    <input type="radio" name="status" value="RESELLER" id="status_reseller" 
-                                           {{ old('status', $user->status) == 'RESELLER' ? 'checked' : '' }} required>
-                                    <label class="status-label" for="status_reseller">
-                                        <div class="status-icon">
-                                            <i class="bi bi-shop"></i>
-                                        </div>
-                                        <span class="status-name">Reseller</span>
-                                    </label>
-                                </div>
-
-                                <div class="status-option status-user">
-                                    <input type="radio" name="status" value="USER" id="status_user" 
-                                           {{ old('status', $user->status) == 'USER' ? 'checked' : '' }} required>
-                                    <label class="status-label" for="status_user">
-                                        <div class="status-icon">
-                                            <i class="bi bi-people"></i>
-                                        </div>
-                                        <span class="status-name">User</span>   
-                                    </label>
-                                </div>
+                <div class="form-group mb-0">
+                    <label class="form-label required">Pilih Peran (Role) Pengguna</label>
+                    
+                    <div class="status-grid">
+                        <label class="status-option">
+                            <input type="radio" name="status" value="admin" {{ old('status', $user->status) == 'admin' ? 'checked' : '' }} required>
+                            <div class="status-card">
+                                <div class="status-icon-box"><i class="bi bi-shield-check"></i></div>
+                                <span class="status-name">Administrator</span>
                             </div>
-                        </div>
+                        </label>
+
+                        <label class="status-option">
+                            <input type="radio" name="status" value="KARYAWAN" {{ old('status', $user->status) == 'KARYAWAN' ? 'checked' : '' }} required>
+                            <div class="status-card">
+                                <div class="status-icon-box"><i class="bi bi-person-vcard"></i></div>
+                                <span class="status-name">Karyawan</span>
+                            </div>
+                        </label>
+
+                        <label class="status-option">
+                            <input type="radio" name="status" value="RESELLER" {{ old('status', $user->status) == 'RESELLER' ? 'checked' : '' }} required>
+                            <div class="status-card">
+                                <div class="status-icon-box"><i class="bi bi-shop"></i></div>
+                                <span class="status-name">Reseller</span>
+                            </div>
+                        </label>
+
+                        <label class="status-option">
+                            <input type="radio" name="status" value="USER" {{ old('status', $user->status) == 'USER' ? 'checked' : '' }} required>
+                            <div class="status-card">
+                                <div class="status-icon-box"><i class="bi bi-person"></i></div>
+                                <span class="status-name">User Biasa</span>
+                            </div>
+                        </label>
                     </div>
                 </div>
             </div>
 
             {{-- FORM ACTIONS --}}
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-{{ $user->exists ? 'check-lg' : 'plus-lg' }} me-1"></i>
-                    {{ $user->exists ? 'Update User' : 'Create User' }}
+                <button type="submit" class="btn-submit">
+                    <i class="bi bi-{{ $user->exists ? 'save' : 'check2-circle' }}"></i>
+                    {{ $user->exists ? 'Simpan Perubahan' : 'Buat Pengguna' }}
                 </button>
-                <a href="{{ route('admin.user') }}" class="btn btn-outline">
-                    <i class="bi bi-x-circle me-1"></i>
-                    Cancel
+                <a href="{{ route('admin.user') }}" class="btn-cancel">
+                    Batal
                 </a>
             </div>
         </form>
@@ -635,32 +474,19 @@
 
 </div>
 
+@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('userForm');
-    const submitBtn = form.querySelector('button[type="submit"]');
+    const submitBtn = form.querySelector('.btn-submit');
     
-    // Add loading state to form submission
+    // Loading state pada tombol submit
     form.addEventListener('submit', function() {
-        submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Processing...';
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Memproses...';
         submitBtn.disabled = true;
     });
 
-    // Add real-time validation feedback
-    const inputs = form.querySelectorAll('input, select');
-    inputs.forEach(input => {
-        input.addEventListener('blur', function() {
-            if (this.checkValidity()) {
-                this.classList.add('is-valid');
-                this.classList.remove('is-invalid');
-            } else {
-                this.classList.add('is-invalid');
-                this.classList.remove('is-valid');
-            }
-        });
-    });
-
-    // Password strength indicator (basic)
+    // Password strength indicator (Sederhana)
     const passwordInput = form.querySelector('input[name="password"]');
     if (passwordInput) {
         passwordInput.addEventListener('input', function() {
@@ -668,36 +494,38 @@ document.addEventListener('DOMContentLoaded', function() {
             const strength = document.getElementById('password-strength') || createPasswordStrength();
             
             if (password.length === 0) {
-                strength.textContent = '';
+                strength.style.display = 'none';
                 return;
             }
             
+            strength.style.display = 'flex';
             let strengthText = '';
-            let strengthClass = '';
+            let strengthColor = '';
             
             if (password.length < 6) {
-                strengthText = 'Weak';
-                strengthClass = 'text-danger';
+                strengthText = 'Terlalu Pendek (Lemah)';
+                strengthColor = 'var(--danger)';
             } else if (password.length < 10) {
-                strengthText = 'Medium';
-                strengthClass = 'text-warning';
+                strengthText = 'Sedang';
+                strengthColor = 'var(--warning)';
             } else {
-                strengthText = 'Strong';
-                strengthClass = 'text-success';
+                strengthText = 'Kuat';
+                strengthColor = 'var(--success)';
             }
             
-            strength.textContent = `Strength: ${strengthText}`;
-            strength.className = `form-text ${strengthClass}`;
+            strength.innerHTML = `<i class="bi bi-shield-lock-fill"></i> Kekuatan Sandi: <strong>${strengthText}</strong>`;
+            strength.style.color = strengthColor;
         });
     }
 
     function createPasswordStrength() {
         const strength = document.createElement('div');
         strength.id = 'password-strength';
-        strength.className = 'form-text';
+        strength.className = 'form-text mt-2';
         passwordInput.parentNode.appendChild(strength);
         return strength;
     }
 });
 </script>
+@endpush
 @endsection

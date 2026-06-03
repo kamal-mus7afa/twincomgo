@@ -23,31 +23,55 @@ use Vinkla\Hashids\Facades\Hashids;
 
 class AdminController extends Controller
 {
-    public function index() {
+    public function index()
+    {
+        $now = Carbon::now();
+        $lastMonth = Carbon::now()->subMonth();
 
-        // 🔹 Total seluruh user
+        // 1. Total Pengguna & Pertumbuhannya
         $totalUsers = User::count();
+        $usersLastMonth = User::whereMonth('created_at', $lastMonth->month)->count();
+        $usersThisMonth = User::whereMonth('created_at', $now->month)->count();
+        $userGrowth = $this->calculateGrowth($usersLastMonth, $usersThisMonth);
 
-        // 🔹 Total reseller (status = RESELLER)
-        $totalReseller = User::where('status', 'RESELLER')->count();
+        // 2. Aktivitas Hari Ini & Perbandingan dengan Hari Kemarin
+        $logToday = ActivityLog::whereDate('created_at', Carbon::today())->count();
+        $logYesterday = ActivityLog::whereDate('created_at', Carbon::yesterday())->count();
+        $logGrowth = $this->calculateGrowth($logYesterday, $logToday);
 
-        // 🔹 Total Accurate Account (tabel accurate_accounts)
+        // 3. Akun Accurate & Pertumbuhannya
         $totalAccurate = AccurateAccount::count();
+        $accurateLastMonth = AccurateAccount::whereMonth('created_at', $lastMonth->month)->count();
+        $accurateThisMonth = AccurateAccount::whereMonth('created_at', $now->month)->count();
+        $accurateGrowth = $this->calculateGrowth($accurateLastMonth, $accurateThisMonth);
 
-        // 🔹 Aktivitas hari ini
-        $logToday = Activity::whereDate('created_at', Carbon::today())->count();
+        // 4. Reseller Aktif & Pertumbuhannya
+        $totalReseller = User::where('status', 'reseller')->count();
+        $resellerLastMonth = User::where('status', 'reseller')->whereMonth('created_at', $lastMonth->month)->count();
+        $resellerThisMonth = User::where('status', 'reseller')->whereMonth('created_at', $now->month)->count();
+        $resellerGrowth = $this->calculateGrowth($resellerLastMonth, $resellerThisMonth);
 
-        // 🔹 Log terbaru (10 terakhir)
-        $recentLogs = Activity::latest()->take(10)->get();
+        // Log Aktivitas Terbaru (Maksimal 5)
+        $recentLogs = ActivityLog::with('causer')->latest()->take(5)->get();
 
-        // 🔹 Kirim ke view
         return view('admin.dashboard', compact(
-            'totalUsers',
-            'totalReseller',
-            'totalAccurate',
-            'logToday',
+            'totalUsers', 'userGrowth', 
+            'logToday', 'logGrowth',
+            'totalAccurate', 'accurateGrowth',
+            'totalReseller', 'resellerGrowth',
             'recentLogs'
         ));
+    }
+
+    /**
+     * Fungsi helper untuk menghitung persentase pertumbuhan.
+     */
+    private function calculateGrowth($oldValue, $newValue)
+    {
+        if ($oldValue == 0) {
+            return $newValue > 0 ? 100 : 0; // Jika sebelumnya 0 dan sekarang ada, naik 100%
+        }
+        return round((($newValue - $oldValue) / $oldValue) * 100, 1);
     }
 
     public function viewUser(Request $request) {
@@ -70,9 +94,10 @@ class AdminController extends Controller
         $totalReseller = User::where('status', 'reseller')->count();
         $totalKaryawan = User::where('status', 'karyawan')->count();
         $totalAdmin    = User::where('status', 'admin')->count();
+        $totalTwincomPatner    = User::where('status', 'twincom patner')->count();
         $totalUsers = User::count();
 
-        return view('admin.users-index', compact('users', 'totalReseller', 'totalKaryawan', 'totalAdmin', 'totalUsers'));
+        return view('admin.users-index', compact('users', 'totalReseller', 'totalKaryawan', 'totalAdmin', 'totalUsers', 'totalTwincomPatner'));
     }
 
     public function logActivity(Request $request)
@@ -179,7 +204,7 @@ class AdminController extends Controller
     public function show($id)
     {
         $user = User::findOrFail($id);
-        return view('admin.users.detail', compact('user'));
+        return view('admin.users2.detail', compact('user'));
     }
 
     // ===============================
